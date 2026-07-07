@@ -491,10 +491,10 @@ export default function Home() {
             </div>
             
             <div className="border-t border-dark-green-tint-1 pt-6 flex flex-col gap-4">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ VERIFIABLE CREDENTIALS ]</span>
+              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ OBSIDIAN GRAPH KNOWLEDGE BASE ]</span>
               <div 
-                className="w-full h-48 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-                style={{ backgroundImage: "url('/certificates_grid.png')" }}
+                className="w-full h-80 bg-contain bg-center bg-no-repeat border border-dark-green-tint-1 opacity-90 hover:opacity-100 transition-opacity duration-300"
+                style={{ backgroundImage: "url('/graph_view.png')" }}
               ></div>
             </div>
           </div>
