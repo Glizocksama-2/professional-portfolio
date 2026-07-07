@@ -219,6 +219,15 @@ export default function Home() {
       tags: ['React', 'Local-First', 'Telemetry', 'Ledger Engine'],
       github: 'https://github.com/Glizocksama-2',
       screenshot: '/northwatch_screenshot.png'
+    },
+    {
+      num: '10',
+      title: 'Kenyan Tax Intelligence',
+      role: 'Systems Developer',
+      desc: 'Interactive tax advisory and compliance intelligence dashboard. Integrates real-time KRA calculators, PAYE/VAT trackers, and a virtual compliance chatbot assisting local businesses.',
+      tags: ['React', 'KRA Rules', 'AI Assistant', 'Tax Analytics'],
+      github: 'https://github.com/Glizocksama-2',
+      screenshot: '/tax_screenshot.png'
     }
   ];
 
@@ -301,7 +310,7 @@ export default function Home() {
           {/* Stats Widget */}
           <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full z-10">
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">9+</span>
+              <span className="text-2xl font-black text-lime">10</span>
               <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
             </div>
             <div className="flex flex-col">
@@ -389,7 +398,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase reveal-text">9 Real Projects</h2>
+            <h2 className="text-4xl font-extrabold uppercase reveal-text">10 Real Projects</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
