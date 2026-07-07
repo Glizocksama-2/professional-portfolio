@@ -5,112 +5,69 @@ import dynamic from 'next/dynamic';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
-import ProjectCarousel from '@/components/ProjectCarousel';
 
-// Register GSAP ScrollTrigger on client side
+// Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Lazy-load R3F components below the fold for performance
-const HelmetCanvas = dynamic(() => import('@/components/HelmetCanvas'), {
+// Lazy load 3D components
+const SharedCanvas = dynamic(() => import('@/components/SharedCanvas'), {
+  ssr: false
+});
+
+const HeroCenterpiece = dynamic(() => import('@/components/HeroCenterpiece'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[250px] flex items-center justify-center bg-dark-green-tint-1 animate-pulse">
-      <div className="text-lime text-[10px] tracking-widest uppercase">LOADING 3D SYSTEM...</div>
+    <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-black">
+      <div className="text-lime text-[10px] tracking-widest uppercase font-mono animate-pulse">
+        [ SYSTEM BOOTING... ]
+      </div>
+    </div>
+  )
+});
+
+const ProjectsSlider3D = dynamic(() => import('@/components/ProjectsSlider3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-black">
+      <div className="text-lime text-[10px] tracking-widest uppercase font-mono animate-pulse">
+        [ CALCULATING 3D CODES... ]
+      </div>
     </div>
   )
 });
 
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeServiceTab, setActiveServiceTab] = useState('all');
+  const [certPage, setCertPage] = useState(0);
   const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '' });
   const [submitStatus, setSubmitStatus] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
   const mainRef = useRef();
 
   useEffect(() => {
-    // GSAP ScrollTrigger animations
     const ctx = gsap.context(() => {
-      // 1. Text slide-up reveals for headlines
-      gsap.utils.toArray('.reveal-text').forEach((text) => {
-        gsap.fromTo(text, 
-          { y: 100, opacity: 0 },
+      // 1. Cinematic Stagger Reveal for all sections
+      gsap.utils.toArray('.stagger-reveal').forEach((section) => {
+        gsap.fromTo(section.querySelectorAll('.reveal-child'), 
+          { y: 50, opacity: 0 },
           { 
             y: 0, 
             opacity: 1, 
-            duration: 1.2, 
-            ease: 'power4.out',
+            duration: 1.0, 
+            stagger: 0.15,
+            ease: 'power3.out',
             scrollTrigger: {
-              trigger: text,
-              start: 'top 85%',
+              trigger: section,
+              start: 'top 80%',
               toggleActions: 'play none none reverse'
             }
           }
         );
       });
 
-      // 2. Interactive card hover tilting and magnetic triggers
-      gsap.utils.toArray('.magnetic-card').forEach((card) => {
-        card.addEventListener('mousemove', (e) => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left - rect.width / 2;
-          const y = e.clientY - rect.top - rect.height / 2;
-          gsap.to(card, {
-            x: x * 0.15,
-            y: y * 0.15,
-            rotateX: -y * 0.05,
-            rotateY: x * 0.05,
-            duration: 0.3,
-            ease: 'power2.out',
-            transformPerspective: 1000
-          });
-        });
-
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, {
-            x: 0,
-            y: 0,
-            rotateX: 0,
-            rotateY: 0,
-            duration: 0.6,
-            ease: 'power3.out'
-          });
-        });
-      });
-
-      // 3. Section wipe transitions
-      gsap.utils.toArray('.wipe-section').forEach((sec) => {
-        gsap.fromTo(sec,
-          { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' },
-          {
-            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: sec,
-              start: 'top bottom',
-              end: 'top top',
-              scrub: true
-            }
-          }
-        );
-      });
-
-      // 4. Parallax background offsets
-      gsap.utils.toArray('.parallax-bg').forEach((bg) => {
-        gsap.to(bg, {
-          yPercent: 20,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: bg,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true
-          }
-        });
-      });
-
-      // 5. Scroll progress update for Three.js rotations
+      // 2. Global Scroll progress updates
       ScrollTrigger.create({
         start: 'top top',
         end: 'bottom bottom',
@@ -124,19 +81,19 @@ export default function Home() {
   }, []);
 
   const services = [
-    { title: 'Web Design', desc: 'Custom, premium typography and aesthetic grid structures.' },
-    { title: 'Frontend', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
-    { title: 'Backend', desc: 'Robust server routing, API logic, and scalable architectures.' },
-    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and clients.' },
-    { title: 'Systems Architecture', desc: 'Secure database setups, DNS config, and reverse proxies.' },
-    { title: 'Landing Pages', desc: 'Highly optimized page-speed configurations and layouts.' },
-    { title: 'Payment Gateway', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
-    { title: 'SEO', desc: 'Structuring search indexing parameters and core vitals audits.' },
-    { title: 'Security', desc: 'Supabase Row-Level Security rules and user authorization setups.' },
-    { title: 'AI Automations', desc: 'Timed scrapers, Groq/Claude integrations, and telegram alerts.' },
-    { title: 'Prompt Engineering', desc: 'Optimizing context structures and workflow system parameters.' },
-    { title: 'Consultancy', desc: 'Technical guidance, infrastructure debugging, and design scoping.' },
-    { title: 'AI Learning & Training', desc: 'Guiding organizations on AI integration and agent skills.' }
+    { title: 'Web Design', category: 'design', desc: 'Custom, premium typography and aesthetic grid structures.' },
+    { title: 'Frontend', category: 'design', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
+    { title: 'Backend', category: 'systems', desc: 'Robust server routing, API logic, and scalable architectures.' },
+    { title: 'Full-Stack Development', category: 'systems', desc: 'End-to-end web deployment linking databases and clients.' },
+    { title: 'Systems Architecture', category: 'systems', desc: 'Secure database setups, DNS config, and reverse proxies.' },
+    { title: 'Landing Pages', category: 'design', desc: 'Highly optimized page-speed configurations and layouts.' },
+    { title: 'Payment Gateway', category: 'systems', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
+    { title: 'SEO', category: 'design', desc: 'Structuring search indexing parameters and core vitals audits.' },
+    { title: 'Security', category: 'systems', desc: 'Supabase Row-Level Security rules and user authorization setups.' },
+    { title: 'AI Automations', category: 'ai', desc: 'Timed scrapers, Groq/Claude integrations, and telegram alerts.' },
+    { title: 'Prompt Engineering', category: 'ai', desc: 'Optimizing context structures and workflow system parameters.' },
+    { title: 'Consultancy', category: 'ai', desc: 'Technical guidance, infrastructure debugging, and design scoping.' },
+    { title: 'AI Learning & Training', category: 'ai', desc: 'Guiding organizations on AI integration and agent skills.' }
   ];
 
   const projects = [
@@ -192,8 +149,7 @@ export default function Home() {
       desc: 'Personal AI Chief of Staff agent scraping daily developer trends, conducting system health tests every 30 minutes, and alerting via Telegram channels.',
       tags: ['n8n', 'Telegram Alerts', 'Render Hosting', 'System Scraper'],
       github: 'https://github.com/Glizocksama-2',
-      screenshot: null,
-      canvasStyle: 'Industrial Red'
+      screenshot: null
     },
     {
       num: '07',
@@ -202,8 +158,7 @@ export default function Home() {
       desc: 'Six-page donor coordination hub accepting international USD cards settled to local banks via Pesapal API, with automated Resend transactional alerts.',
       tags: ['HTML/CSS', 'Pesapal API', 'Resend', 'AI Help Widget'],
       github: 'https://github.com/Glizocksama-2',
-      screenshot: null,
-      canvasStyle: 'Fluid Aqua'
+      screenshot: null
     },
     {
       num: '08',
@@ -212,8 +167,7 @@ export default function Home() {
       desc: 'Android application for sports club tracking, integrating user registrations, validation, and structured WhatsApp sales pipelines.',
       tags: ['Kotlin', 'Material Design', 'Android SDK', 'Input Validation'],
       github: 'https://github.com/Glizocksama-2',
-      screenshot: null,
-      canvasStyle: 'Sport Royal'
+      screenshot: null
     },
     {
       num: '09',
@@ -235,6 +189,16 @@ export default function Home() {
     }
   ];
 
+  const certifications = [
+    'Claude 101', 'Claude Code 101', 'Claude Platform 101', 'Introduction to Claude Cowork', 
+    'Claude Code in Action', 'AI Fluency: Framework and Foundations', 'Building with Claude API', 
+    'Introduction to Model Context Protocol', 'AI Fluency for Educators', 'AI Fluency for Students', 
+    'Model Context Protocol: Advanced Topics', 'Claude with Amazon Bedrock', 'Claude with Google Cloud Vertex AI', 
+    'Teaching AI Fluency', 'AI Fluency for Non Profits', 'Introduction to Agent Skills', 
+    'Introduction to Subagents', 'AI Capabilities and Limitations', 'AI Fluency for Small Businesses', 
+    'AI Fluency for Builders'
+  ];
+
   const techStacks = [
     { group: 'Frontend', items: ['React', 'Vite', 'HTML5', 'CSS3', 'Tailwind CSS', 'Framer Motion'] },
     { group: 'Backend', items: ['Node.js', 'Express', 'n8n pipelines', 'PostgreSQL', 'Supabase'] },
@@ -243,6 +207,16 @@ export default function Home() {
     { group: 'Infrastructure', items: ['Docker', 'Docker Compose', 'Render', 'Netlify', 'Nginx', 'DNS Setup'] },
     { group: 'Payments', items: ['Pesapal Routing', 'Instasend API', 'M-Pesa Integrations'] }
   ];
+
+  // Filtering logic for Services
+  const filteredServices = activeServiceTab === 'all' 
+    ? services 
+    : services.filter(s => s.category === activeServiceTab);
+
+  // Pagination logic for Certifications (6 per page)
+  const certsPerPage = 6;
+  const totalCertPages = Math.ceil(certifications.length / certsPerPage);
+  const paginatedCerts = certifications.slice(certPage * certsPerPage, (certPage + 1) * certsPerPage);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -257,173 +231,156 @@ export default function Home() {
 
   return (
     <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
+      <SharedCanvas />
+      
+      {/* Sticky Navigation */}
+      <nav className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
         <div className="text-xl font-extrabold tracking-tighter uppercase font-sans">
           BRIAN MUKWE<span className="text-lime">.</span>
         </div>
-        <div className="hidden md:flex gap-8 text-[11px] tracking-widest uppercase font-bold text-green-off-white-2">
+        <div className="hidden md:flex gap-8 text-[10px] tracking-widest uppercase font-bold text-green-off-white-2">
           <a href="#about" className="hover:text-lime transition-colors">ABOUT</a>
           <a href="#services" className="hover:text-lime transition-colors">SERVICES</a>
           <a href="#projects" className="hover:text-lime transition-colors">PROJECTS</a>
-          <a href="#tech" className="hover:text-lime transition-colors">TECH STACK</a>
+          <a href="#tech" className="hover:text-lime transition-colors">TECH</a>
           <a href="#credentials" className="hover:text-lime transition-colors">CREDENTIALS</a>
         </div>
         <a 
           href="#contact" 
-          className="bg-lime text-black px-6 py-2 font-bold uppercase tracking-wider text-[10px] hover:bg-transparent hover:text-lime border border-lime transition-all duration-300"
+          className="bg-lime text-black px-6 py-2.5 font-bold uppercase tracking-wider text-[10px] hover:bg-transparent hover:text-lime border border-lime transition-all duration-300"
         >
           HIRE ME
         </a>
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black">
-        {/* Availability Badge */}
-        <div className="z-10 self-start mt-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[10px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
+      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black stagger-reveal">
+        <div className="z-10 self-start mt-4 reveal-child">
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[9px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
             <span className="w-1.5 h-1.5 bg-lime rounded-full animate-ping"></span>
-            AVAILABLE FOR FREELANCE PROJECTS
+            AVAILABLE FOR CONTRACTS
           </span>
         </div>
 
-        {/* Center Portrait */}
-        <div className="absolute inset-0 flex items-center justify-center z-0 overflow-hidden">
-          <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-dark-green relative border border-dark-green-tint-1 overflow-hidden">
-            <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 mix-blend-luminosity parallax-bg" 
-              style={{ backgroundImage: "url('/brian_portrait.png')" }}
-            ></div>
-            <div className="absolute bottom-6 left-6 text-white text-[10px] tracking-widest uppercase font-semibold z-10 bg-black/40 px-2 py-1">
-              [ BRIAN MUKWE WALIAULA • NAIROBI, KENYA ]
-            </div>
+        {/* 3D Centerpiece Portal Viewport */}
+        <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center">
+          <div className="w-[90vw] md:w-[60vw] h-[80vh] flex items-center justify-center">
+            <HeroCenterpiece scrollProgress={scrollProgress} />
           </div>
         </div>
 
-        {/* Title Grid */}
-        <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24">
-          <div className="flex flex-col overflow-hidden">
-            <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase reveal-text">
+        <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24 pb-8 reveal-child">
+          <div className="flex flex-col">
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-none uppercase">
               BRIAN<br />MUKWE<span className="text-lime">.</span>
             </h1>
-            <p className="text-sm font-bold text-green-off-white-2 tracking-wide uppercase mt-4">
-              Full-Stack Developer &amp; Freelancer
+            <p className="text-xs font-bold text-green-off-white-2 tracking-widest uppercase mt-4">
+              FULL-STACK DEVELOPER &amp; TELEMETRY ENGINEER
             </p>
           </div>
 
-          {/* Stats Widget */}
-          <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full z-10">
+          {/* Key Indicators */}
+          <div className="grid grid-cols-3 gap-8 bg-black/85 border border-dark-green-tint-1 p-6 md:max-w-sm w-full">
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">10</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
+              <span className="text-3xl font-black text-lime">10</span>
+              <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPS</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">13</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
+              <span className="text-3xl font-black text-lime">13</span>
+              <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">20+</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">CERTS</span>
+              <span className="text-3xl font-black text-lime">20+</span>
+              <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">CERTS</span>
             </div>
           </div>
         </div>
-
-        {/* CTA Buttons */}
-        <div className="z-10 flex gap-4 mt-8 pb-12">
-          <a href="#projects" className="bg-white text-black px-8 py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-lime hover:text-black border border-white hover:border-lime transition-all duration-300">
-            VIEW PROJECTS
-          </a>
-          <a href="#contact" className="border border-white text-white px-8 py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-white hover:text-black transition-all duration-300">
-            GET IN TOUCH
-          </a>
-        </div>
       </section>
-
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
 
       {/* About Section */}
-      <section id="about" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1 relative overflow-hidden wipe-section">
+      <section id="about" className="px-8 py-20 bg-dark-green border-y border-dark-green-tint-1 stagger-reveal">
         <div className="max-w-4xl mx-auto flex flex-col gap-6 relative z-10">
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ PERSONAL SUMMARY ]</span>
-          <p className="text-lg md:text-2xl text-white font-sans leading-relaxed reveal-text">
-            I build performant systems, automated scraper tools, e-commerce networks, and clean frontend UI configurations. From initial DNS routing parameters to final database security rule optimizations, I handle complete full-stack project cycles.
+          <span className="text-[10px] tracking-widest text-lime uppercase font-bold reveal-child">[ BIO PROFILE ]</span>
+          <p className="text-xl md:text-3xl text-white font-sans leading-relaxed reveal-child font-bold">
+            I deploy secure full-stack applications, automated scrapers, payment gateways, and custom telemetry interfaces. From database security parameters to fluid web layouts, I handle complete system lifecycles.
           </p>
 
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold mt-8">[ WORKING STYLE ]</span>
-          <blockquote className="font-brier text-green-off-white-1 text-2xl md:text-4xl leading-tight reveal-text">
-            "High performance is built on telemetry, structured routines, and precise specifications. Every pipeline must be monitored, and every database query optimized for speed."
+          <span className="text-[10px] tracking-widest text-lime uppercase font-bold mt-8 reveal-child">[ LOGIC SPECIFICATION ]</span>
+          <blockquote className="font-sans text-green-off-white-1 text-2xl md:text-3xl leading-tight reveal-child border-l-2 border-lime pl-6 italic">
+            "Reliability is built on continuous telemetry, clean separation of concerns, and verified code execution."
           </blockquote>
-
-          <div className="flex gap-6 mt-6 text-xs font-bold uppercase tracking-wider text-white">
-            <a href="mailto:brianmukwe097@gmail.com" className="hover:text-lime transition-colors">[ EMAIL ]</a>
-            <a href="tel:+254792300552" className="hover:text-lime transition-colors">[ CALL ]</a>
-            <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="hover:text-lime transition-colors">[ GITHUB ]</a>
-          </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
       {/* Services Section */}
-      <section id="services" className="px-8 py-24 bg-black">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <div className="flex flex-col gap-2">
+      <section id="services" className="px-8 py-20 bg-black stagger-reveal">
+        <div className="max-w-6xl mx-auto flex flex-col gap-8">
+          <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-            <h2 className="text-4xl font-extrabold uppercase reveal-text">13 Service Areas</h2>
+            <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
           </div>
 
-          {/* Asymmetric Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.map((srv, idx) => (
-              <div 
-                key={idx} 
-                className={`border border-dark-green-tint-1 p-8 bg-dark-green/10 flex flex-col justify-between hover:border-lime transition-all duration-300 ${
-                  idx % 4 === 0 ? 'md:col-span-2' : ''
+          {/* Interactive Tabs */}
+          <div className="flex flex-wrap gap-3 reveal-child">
+            {['all', 'design', 'systems', 'ai'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveServiceTab(tab)}
+                className={`px-5 py-2 text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 ${
+                  activeServiceTab === tab 
+                    ? 'bg-lime text-black border-lime' 
+                    : 'bg-transparent text-white border-dark-green-tint-1 hover:border-lime'
                 }`}
               >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Filtered Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal-child">
+            {filteredServices.map((srv, idx) => (
+              <div 
+                key={idx} 
+                className="border border-dark-green-tint-1 p-6 bg-dark-green/10 flex flex-col justify-between hover:border-lime transition-all duration-300"
+              >
                 <div>
-                  <span className="text-[10px] tracking-widest text-lime uppercase font-bold">AREA {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
-                  <h3 className="text-xl font-bold uppercase mt-2 text-white">{srv.title}</h3>
+                  <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">SPEC {idx + 1}</span>
+                  <h3 className="text-lg font-bold uppercase mt-2 text-white">{srv.title}</h3>
                 </div>
-                <p className="text-sm text-green-off-white-2 mt-4 leading-relaxed">{srv.desc}</p>
+                <p className="text-xs text-green-off-white-2 mt-4 leading-relaxed">{srv.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
-      {/* Projects Section */}
-      <section id="projects" className="px-8 py-24 bg-black border-t border-dark-green-tint-1 wipe-section">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <div className="flex flex-col gap-2">
+      {/* Projects Section - 3D Slider */}
+      <section id="projects" className="px-8 py-20 bg-black border-t border-dark-green-tint-1 stagger-reveal">
+        <div className="max-w-6xl mx-auto flex flex-col gap-8">
+          <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase reveal-text">10 Real Projects</h2>
+            <h2 className="text-4xl font-extrabold uppercase">10 Real Projects</h2>
           </div>
 
-          {/* Interactive 3D Coverflow Carousel */}
-          <ProjectCarousel projects={projects} />
+          {/* High-Fidelity 3D Scroll Slider */}
+          <div className="reveal-child">
+            <ProjectsSlider3D projects={projects} />
+          </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
       {/* Tech Stack Section */}
-      <section id="tech" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ CURRENT TECH STACK ]</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section id="tech" className="px-8 py-20 bg-dark-green border-y border-dark-green-tint-1 stagger-reveal">
+        <div className="max-w-6xl mx-auto flex flex-col gap-8">
+          <span className="text-[10px] tracking-widest text-lime uppercase font-bold reveal-child">[ CURRENT SYSTEM TOOLS ]</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-child">
             {techStacks.map((stk, idx) => (
-              <div key={idx} className="border border-dark-green-tint-1 p-6 bg-black/30">
+              <div key={idx} className="border border-dark-green-tint-1 p-6 bg-black/40">
                 <h3 className="text-xs font-bold tracking-widest uppercase text-lime mb-4">{stk.group}</h3>
                 <div className="flex flex-wrap gap-2">
                   {stk.items.map((item, i) => (
-                    <span key={i} className="text-xs px-3 py-1.5 bg-black text-green-off-white-1 uppercase font-semibold">{item}</span>
+                    <span key={i} className="text-[11px] px-3 py-1.5 bg-black text-green-off-white-1 uppercase font-semibold">{item}</span>
                   ))}
                 </div>
               </div>
@@ -432,51 +389,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
       {/* Credentials Section */}
-      <section id="credentials" className="px-8 py-24 bg-black">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
-          <div className="flex flex-col gap-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ ACADEMIC DEVELOPMENT ]</span>
+      <section id="credentials" className="px-8 py-20 bg-black stagger-reveal">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="flex flex-col gap-6 reveal-child">
+            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ EDUCATION ]</span>
             <div>
-              <h3 className="text-2xl font-bold uppercase text-white">Daystar University</h3>
-              <p className="text-sm text-green-off-white-2 mt-2 leading-relaxed">
+              <h3 className="text-xl font-bold uppercase text-white font-sans">Daystar University</h3>
+              <p className="text-xs text-green-off-white-2 mt-2 leading-relaxed">
                 • Diploma in Human Resources<br />
                 • Certificate in Business Management (Graduated 2024)
               </p>
             </div>
             <div className="border-t border-dark-green-tint-1 pt-6">
-              <h3 className="text-2xl font-bold uppercase text-white">Upper Hill School</h3>
-              <p className="text-sm text-green-off-white-2 mt-2">Kenya Certificate of Secondary Education (KCSE)</p>
+              <h3 className="text-xl font-bold uppercase text-white font-sans">Upper Hill School</h3>
+              <p className="text-xs text-green-off-white-2 mt-2">Kenya Certificate of Secondary Education (KCSE)</p>
             </div>
             
             <div className="border-t border-dark-green-tint-1 pt-6 flex flex-col gap-4">
               <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ OBSIDIAN GRAPH KNOWLEDGE BASE ]</span>
               <div 
-                className="w-full h-80 bg-contain bg-center bg-no-repeat border border-dark-green-tint-1 opacity-90 hover:opacity-100 transition-opacity duration-300"
+                className="w-full h-72 bg-contain bg-center bg-no-repeat border border-dark-green-tint-1 opacity-90 hover:opacity-100 transition-opacity duration-300"
                 style={{ backgroundImage: "url('/graph_view.png')" }}
               ></div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ ANTHROPIC CERTIFICATIONS (20+) ]</span>
-            <div className="h-80 overflow-y-auto border border-dark-green-tint-1 p-6 bg-dark-green/10 flex flex-col gap-2 mb-4">
-              {[
-                'Claude 101', 'Claude Code 101', 'Claude Platform 101', 'Introduction to Claude Cowork', 
-                'Claude Code in Action', 'AI Fluency: Framework and Foundations', 'Building with Claude API', 
-                'Introduction to Model Context Protocol', 'AI Fluency for Educators', 'AI Fluency for Students', 
-                'Model Context Protocol: Advanced Topics', 'Claude with Amazon Bedrock', 'Claude with Google Cloud Vertex AI', 
-                'Teaching AI Fluency', 'AI Fluency for Non Profits', 'Introduction to Agent Skills', 
-                'Introduction to Subagents', 'AI Capabilities and Limitations', 'AI Fluency for Small Businesses', 
-                'AI Fluency for Builders'
-              ].map((cert, idx) => (
-                <div key={idx} className="text-xs text-white uppercase font-bold border-b border-dark-green-tint-2/40 pb-2">
+          <div className="flex flex-col gap-4 reveal-child">
+            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ CERTIFICATIONS (20+) ]</span>
+            
+            {/* Paginated Certs List */}
+            <div className="border border-dark-green-tint-1 p-6 bg-dark-green/10 flex flex-col gap-3 min-h-[280px]">
+              {paginatedCerts.map((cert, idx) => (
+                <div key={idx} className="text-[11px] text-white uppercase font-bold border-b border-dark-green-tint-2/40 pb-2">
                   [ {cert} ]
                 </div>
               ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex gap-4 items-center justify-end text-xs">
+              <button 
+                disabled={certPage === 0}
+                onClick={() => setCertPage(prev => Math.max(0, prev - 1))}
+                className="px-3 py-1 bg-black border border-dark-green-tint-1 text-white disabled:opacity-40"
+              >
+                &lt; PREV
+              </button>
+              <span className="font-mono text-lime">{certPage + 1} / {totalCertPages}</span>
+              <button 
+                disabled={certPage === totalCertPages - 1}
+                onClick={() => setCertPage(prev => Math.min(totalCertPages - 1, prev + 1))}
+                className="px-3 py-1 bg-black border border-dark-green-tint-1 text-white disabled:opacity-40"
+              >
+                NEXT &gt;
+              </button>
             </div>
 
             <div 
@@ -488,32 +455,32 @@ export default function Home() {
       </section>
 
       {/* Partners Marquee */}
-      <section className="py-12 bg-black border-t border-dark-green-tint-1">
+      <section className="py-8 bg-black border-t border-dark-green-tint-1">
         <Marquee textItems={['REACT', 'NEXT.JS', 'TAILWIND CSS', 'SUPABASE', 'DOCKER', 'N8N AUTOMATION', 'POSTGRESQL', 'FLUTTER']} />
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="px-8 py-24 bg-dark-green border-t border-dark-green-tint-1">
+      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="flex flex-col gap-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ CONTACT DETAILS ]</span>
+          <div className="flex flex-col gap-6 reveal-child">
+            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
             <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
-            <p className="text-sm text-green-off-white-2 leading-relaxed">
-              If you have a project requiring payment integration, system automation, or dynamic React deployment pipelines, submit the form or reach out directly.
+            <p className="text-xs text-green-off-white-2 leading-relaxed">
+              Submit the form or reach out directly for systems, automations, and frontend deployments.
             </p>
-            <div className="flex flex-col gap-2 text-xs font-bold uppercase text-white mt-4">
+            <div className="flex flex-col gap-2 text-xs font-bold uppercase text-white mt-4 font-mono">
               <span>Email: brianmukwe097@gmail.com</span>
               <span>Phone: +254 792 300 552</span>
               <span>Location: Nairobi, Kenya — GMT+3</span>
             </div>
           </div>
 
-          {/* Inquiry Form */}
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 bg-black/40 border border-dark-green-tint-1 p-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ INQUIRY FORM ]</span>
+          {/* Form */}
+          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 bg-black/40 border border-dark-green-tint-1 p-6 reveal-child">
+            <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">[ FORM.TRANSMISSION ]</span>
             
             <div className="flex flex-col gap-1">
-              <label htmlFor="name" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Name</label>
+              <label htmlFor="name" className="text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Name</label>
               <input 
                 id="name"
                 type="text" 
@@ -521,12 +488,12 @@ export default function Home() {
                 value={contactForm.name} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="email" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Email</label>
+              <label htmlFor="email" className="text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Email</label>
               <input 
                 id="email"
                 type="email" 
@@ -534,19 +501,19 @@ export default function Home() {
                 value={contactForm.email} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="service" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Service Required</label>
+              <label htmlFor="service" className="text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Service Required</label>
               <select 
                 id="service"
                 name="service" 
                 value={contactForm.service} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-xs text-white focus:border-lime focus:outline-none"
               >
                 <option value="">Select a service...</option>
                 {services.map((s, i) => (
@@ -556,7 +523,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="message" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Message</label>
+              <label htmlFor="message" className="text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Message</label>
               <textarea 
                 id="message"
                 name="message" 
@@ -564,53 +531,52 @@ export default function Home() {
                 value={contactForm.message} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 p-4 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 p-4 text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <button 
               type="submit" 
-              className="bg-lime text-black py-3 font-bold uppercase tracking-wider text-xs border border-lime hover:bg-transparent hover:text-lime transition-all duration-300"
+              className="bg-lime text-black py-3 font-bold uppercase tracking-wider text-[10px] border border-lime hover:bg-transparent hover:text-lime transition-all duration-300"
             >
               SEND INQUIRY
             </button>
 
             {submitStatus === 'SUCCESS' && (
-              <span className="text-xs text-lime uppercase font-bold text-center mt-2">[ INQUIRY RECEIVED SUCCESSFUL ]</span>
+              <span className="text-xs text-lime uppercase font-bold text-center mt-2 font-mono">[ TRANSMISSION SUCCESSFUL ]</span>
             )}
           </form>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-dark-green-tint-1 py-16 px-8">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <h1 className="text-4xl md:text-7xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-12">
+      <footer className="bg-black border-t border-dark-green-tint-1 py-12 px-8">
+        <div className="max-w-6xl mx-auto flex flex-col gap-8">
+          <h1 className="text-3xl md:text-6xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-8">
             ALWAYS BRINGING THE FIGHT.
           </h1>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">DIRECTORY</span>
-              <a href="#hero" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ HOME ]</a>
-              <a href="#about" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ ABOUT ]</a>
-              <a href="#services" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ SERVICES ]</a>
-              <a href="#projects" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ PROJECTS ]</a>
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">DIRECTORY</span>
+              <a href="#about" className="text-green-off-white-2 hover:text-white transition-colors">[ ABOUT ]</a>
+              <a href="#services" className="text-green-off-white-2 hover:text-white transition-colors">[ SERVICES ]</a>
+              <a href="#projects" className="text-green-off-white-2 hover:text-white transition-colors">[ PROJECTS ]</a>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">COMMUNITIES</span>
-              <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ GITHUB ]</a>
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">COMMUNITIES</span>
+              <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="text-green-off-white-2 hover:text-white transition-colors">[ GITHUB ]</a>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">LEGAL</span>
-              <a href="#privacy" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
-              <a href="#terms" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ TERMS &amp; CONDITIONS ]</a>
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">LEGAL</span>
+              <a href="#privacy" className="text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
+              <a href="#terms" className="text-green-off-white-2 hover:text-white transition-colors">[ TERMS &amp; CONDITIONS ]</a>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-dark-green-tint-1 pt-8 text-[10px] text-green-off-white-2 uppercase">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-dark-green-tint-1 pt-6 text-[9px] text-green-off-white-2 uppercase font-mono">
             <span>© 2026 Brian Mukwe Waliaula. All rights reserved.</span>
           </div>
         </div>
