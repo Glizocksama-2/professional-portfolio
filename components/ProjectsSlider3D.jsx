@@ -1,121 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { View, PerspectiveCamera, useTexture } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-
-// Fallback procedural material component
-function FeedbackGridMaterial({ title }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw background tech grid
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, 512, 256);
-    
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 512; i += 32) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, 256);
-      ctx.stroke();
-    }
-    for (let j = 0; j < 256; j += 32) {
-      ctx.beginPath();
-      ctx.moveTo(0, j);
-      ctx.lineTo(512, j);
-      ctx.stroke();
-    }
-    
-    // Draw neon accent border
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(10, 10, 492, 236);
-    
-    // Write text
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 24px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(title.toUpperCase(), 256, 120);
-    
-    ctx.fillStyle = '#10b981';
-    ctx.font = '14px Outfit, sans-serif';
-    ctx.fillText('NO SCREENSHOT RECORDED', 256, 160);
-
-    canvasRef.current = new THREE.CanvasTexture(canvas);
-  }, [title]);
-
-  return canvasRef.current ? (
-    <meshStandardMaterial map={canvasRef.current} roughness={0.2} metalness={0.5} />
-  ) : (
-    <meshStandardMaterial color="#10b981" roughness={0.8} />
-  );
-}
-
-// Project Card Mesh
-function ProjectCard3D({ proj, index, activeIndex, isDragging, dragOffset }) {
-  const meshRef = useRef();
-  
-  // Calculate relative index offset
-  const offset = index - activeIndex;
-  const absOffset = Math.abs(offset);
-  
-  // Conditionally load texture if screenshot exists
-  let texture = null;
-  if (proj.screenshot) {
-    try {
-      texture = useTexture(proj.screenshot);
-    } catch (e) {
-      console.warn(`Failed to load texture for ${proj.title}:`, e);
-    }
-  }
-
-  useFrame(() => {
-    if (!meshRef.current) return;
-
-    // Position along a shallow 3D arc
-    const targetX = offset * 2.2 + (isDragging ? dragOffset * 0.005 : 0);
-    const targetY = -absOffset * 0.15;
-    const targetZ = -absOffset * 0.6;
-    const targetRotY = -offset * 0.25;
-
-    // Smooth spring interpolation (lerp)
-    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, 0.1);
-    meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, targetY, 0.1);
-    meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, 0.1);
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, targetRotY, 0.1);
-    
-    // Scale down inactive items
-    const targetScale = index === activeIndex ? 1.0 : 0.85;
-    meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, targetScale, 0.1));
-  });
-
-  return (
-    <mesh ref={meshRef} position={[offset * 2.2, 0, -absOffset * 0.6]}>
-      <planeGeometry args={[2.0, 1.2]} />
-      {texture ? (
-        <meshStandardMaterial map={texture} roughness={0.1} metalness={0.3} />
-      ) : (
-        <FeedbackGridMaterial title={proj.title} />
-      )}
-    </mesh>
-  );
-}
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import gsap from 'gsap';
 
 export default function ProjectsSlider3D({ projects = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
   const containerRef = useRef(null);
   const dragStartRef = useRef(0);
+  const dragOffsetRef = useRef(0);
   const lastScrollTime = useRef(0);
+  const cardsRef = useRef([]);
 
   const handleNext = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % projects.length);
@@ -125,95 +20,192 @@ export default function ProjectsSlider3D({ projects = [] }) {
     setActiveIndex((prev) => (prev - 1 + projects.length) % projects.length);
   }, [projects.length]);
 
-  // Handle Wheel Scroll (Debounced/Throttled)
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [handleNext, handlePrev]);
+
+  // Animate cards on active index change
+  useEffect(() => {
+    cardsRef.current.forEach((card, idx) => {
+      if (!card) return;
+      const offset = idx - activeIndex;
+      const absOffset = Math.abs(offset);
+      
+      gsap.to(card, {
+        x: offset * 280,
+        z: -absOffset * 120,
+        rotateY: -offset * 15,
+        scale: idx === activeIndex ? 1 : 0.82 - absOffset * 0.04,
+        opacity: absOffset > 2 ? 0 : 1 - absOffset * 0.25,
+        filter: idx === activeIndex ? 'blur(0px) brightness(1)' : `blur(${absOffset * 1.5}px) brightness(0.6)`,
+        duration: 0.65,
+        ease: 'power3.out',
+        zIndex: projects.length - absOffset,
+      });
+    });
+  }, [activeIndex, projects.length]);
+
+  // Handle Wheel Scroll (Throttled)
   const handleWheel = (e) => {
+    e.preventDefault();
     const now = Date.now();
-    if (now - lastScrollTime.current < 600) return; // 600ms throttle to prevent skipping
+    if (now - lastScrollTime.current < 500) return;
     lastScrollTime.current = now;
 
-    if (e.deltaY > 0) {
-      handleNext();
-    } else {
-      handlePrev();
-    }
+    if (e.deltaY > 0) handleNext();
+    else handlePrev();
   };
 
-  // Drag Event Handlers
-  const handleMouseDown = (e) => {
+  // Drag/Swipe Event Handlers
+  const handleDragStart = (e) => {
     setIsDragging(true);
     dragStartRef.current = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-    setDragOffset(0);
+    dragOffsetRef.current = 0;
   };
 
-  const handleMouseMove = (e) => {
+  const handleDragMove = (e) => {
     if (!isDragging) return;
     const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-    setDragOffset(clientX - dragStartRef.current);
+    dragOffsetRef.current = clientX - dragStartRef.current;
   };
 
-  const handleMouseUp = () => {
+  const handleDragEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
     
-    const threshold = 100;
-    if (dragOffset < -threshold) {
-      handleNext();
-    } else if (dragOffset > threshold) {
-      handlePrev();
-    }
-    setDragOffset(0);
+    const threshold = 80;
+    if (dragOffsetRef.current < -threshold) handleNext();
+    else if (dragOffsetRef.current > threshold) handlePrev();
+    dragOffsetRef.current = 0;
   };
+
+  const activeProject = projects[activeIndex] || {};
 
   return (
     <div 
       ref={containerRef}
-      className="w-full relative flex flex-col items-center select-none overflow-hidden"
+      className="w-full relative flex flex-col items-center select-none overflow-hidden cursor-grab active:cursor-grabbing"
       onWheel={handleWheel}
-      onTouchStart={handleMouseDown}
-      onTouchMove={handleMouseMove}
-      onTouchEnd={handleMouseUp}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onTouchStart={handleDragStart}
+      onTouchMove={handleDragMove}
+      onTouchEnd={handleDragEnd}
+      onMouseDown={handleDragStart}
+      onMouseMove={handleDragMove}
+      onMouseUp={handleDragEnd}
+      onMouseLeave={handleDragEnd}
     >
-      {/* 3D Scene viewport (Drei View) */}
-      <div className="w-full max-w-5xl h-[320px] md:h-[450px] relative">
-        <View track={containerRef} className="w-full h-full">
-          <PerspectiveCamera makeDefault position={[0, 0, 3.2]} fov={50} />
-          
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[5, 10, 3]} intensity={1.5} />
-          <pointLight position={[-5, -5, -2]} color="#10b981" intensity={1.0} />
+      {/* 3D Scene using CSS Perspective */}
+      <div 
+        className="w-full max-w-5xl relative flex items-center justify-center"
+        style={{ 
+          perspective: '1200px',
+          perspectiveOrigin: '50% 50%',
+          height: '360px',
+        }}
+      >
+        <div 
+          className="relative w-full h-full flex items-center justify-center"
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          {projects.map((proj, idx) => {
+            const offset = idx - activeIndex;
+            const absOffset = Math.abs(offset);
+            
+            return (
+              <div
+                key={idx}
+                ref={(el) => cardsRef.current[idx] = el}
+                className="absolute transition-none"
+                style={{
+                  width: '400px',
+                  height: '240px',
+                  transformStyle: 'preserve-3d',
+                  willChange: 'transform, opacity, filter',
+                  cursor: idx === activeIndex ? 'default' : 'pointer',
+                  zIndex: projects.length - absOffset,
+                }}
+                onClick={() => idx !== activeIndex && setActiveIndex(idx)}
+              >
+                {/* Card Content */}
+                <div className="w-full h-full relative overflow-hidden border border-dark-green-tint-1 bg-dark-green/40 group">
+                  {proj.screenshot ? (
+                    <img 
+                      src={proj.screenshot} 
+                      alt={proj.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-black via-dark-green to-black flex flex-col items-center justify-center gap-3">
+                      <div className="grid grid-cols-8 gap-px opacity-20 absolute inset-0">
+                        {Array.from({ length: 64 }).map((_, i) => (
+                          <div key={i} className="border border-dark-green-tint-1/30" />
+                        ))}
+                      </div>
+                      <span className="text-lime text-[10px] tracking-widest uppercase font-mono font-bold z-10 border border-lime/30 px-3 py-1">
+                        {proj.num}
+                      </span>
+                      <span className="text-white text-sm font-bold uppercase tracking-wider z-10">{proj.title}</span>
+                      <span className="text-lime/50 text-[9px] tracking-widest uppercase font-mono z-10">
+                        NO SCREENSHOT RECORDED
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Overlay gradient on screenshot cards */}
+                  {proj.screenshot && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  )}
+                  
+                  {/* Card bottom label */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/80 px-3 py-2 flex justify-between items-center">
+                    <span className="text-[9px] text-lime tracking-widest uppercase font-mono font-bold">{proj.num}</span>
+                    <span className="text-[10px] text-white uppercase font-bold tracking-wider truncate ml-2">{proj.title}</span>
+                  </div>
+                </div>
 
-          <Suspense fallback={null}>
-            {projects.map((proj, idx) => (
-              <ProjectCard3D 
-                key={idx} 
-                proj={proj} 
-                index={idx} 
-                activeIndex={activeIndex}
-                isDragging={isDragging}
-                dragOffset={dragOffset}
-              />
-            ))}
-          </Suspense>
-        </View>
+                {/* Reflection */}
+                <div 
+                  className="absolute top-full left-0 w-full overflow-hidden opacity-15 pointer-events-none"
+                  style={{ 
+                    height: '60px',
+                    transform: 'rotateX(180deg) translateY(0px)',
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
+                  }}
+                >
+                  {proj.screenshot ? (
+                    <img src={proj.screenshot} alt="" className="w-full h-60 object-cover" />
+                  ) : (
+                    <div className="w-full h-60 bg-dark-green" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Navigation & Active Project Details */}
-      <div className="max-w-2xl text-center mt-6 px-6 z-10">
+      {/* Navigation and Active Project Details */}
+      <div className="max-w-2xl text-center mt-8 px-6 z-10">
         <span className="text-lime text-[10px] tracking-widest uppercase font-mono font-bold">
-          PROJECT {projects[activeIndex].num} • {projects[activeIndex].role}
+          PROJECT {activeProject.num} // {activeProject.role}
         </span>
         <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mt-2 font-sans">
-          {projects[activeIndex].title}
+          {activeProject.title}
         </h3>
         <p className="text-sm text-green-off-white-2 mt-4 leading-relaxed max-w-lg mx-auto">
-          {projects[activeIndex].desc}
+          {activeProject.desc}
         </p>
 
         <div className="flex flex-wrap justify-center gap-2 mt-6">
-          {projects[activeIndex].tags.map((t, i) => (
+          {(activeProject.tags || []).map((t, i) => (
             <span key={i} className="text-[9px] tracking-wider uppercase bg-dark-green px-2.5 py-1 text-lime font-bold">
               {t}
             </span>
@@ -228,7 +220,7 @@ export default function ProjectsSlider3D({ projects = [] }) {
             &lt;
           </button>
           <a 
-            href={projects[activeIndex].github} 
+            href={activeProject.github} 
             target="_blank" 
             rel="noopener noreferrer" 
             className="border border-lime text-lime px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-lime hover:text-black transition-all duration-300"
@@ -250,8 +242,8 @@ export default function ProjectsSlider3D({ projects = [] }) {
           <button
             key={i}
             onClick={() => setActiveIndex(i)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              activeIndex === i ? 'w-6 bg-lime' : 'bg-dark-green-tint-1'
+            className={`h-2 rounded-full transition-all duration-300 ${
+              activeIndex === i ? 'w-6 bg-lime' : 'w-2 bg-dark-green-tint-1'
             }`}
             aria-label={`Go to slide ${i + 1}`}
           ></button>

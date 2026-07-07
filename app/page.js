@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
+import PhotoReveal from '@/components/PhotoReveal';
 
 // Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
@@ -12,10 +13,6 @@ if (typeof window !== 'undefined') {
 }
 
 // Lazy load 3D components
-const SharedCanvas = dynamic(() => import('@/components/SharedCanvas'), {
-  ssr: false
-});
-
 const HeroCenterpiece = dynamic(() => import('@/components/HeroCenterpiece'), {
   ssr: false,
   loading: () => (
@@ -231,7 +228,6 @@ export default function Home() {
 
   return (
     <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
-      <SharedCanvas />
       
       {/* Sticky Navigation */}
       <nav className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
@@ -297,23 +293,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="px-8 py-20 bg-dark-green border-y border-dark-green-tint-1 stagger-reveal">
-        <div className="max-w-4xl mx-auto flex flex-col gap-6 relative z-10">
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold reveal-child">[ BIO PROFILE ]</span>
-          <p className="text-xl md:text-3xl text-white font-sans leading-relaxed reveal-child font-bold">
-            I deploy secure full-stack applications, automated scrapers, payment gateways, and custom telemetry interfaces. From database security parameters to fluid web layouts, I handle complete system lifecycles.
-          </p>
-
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold mt-8 reveal-child">[ LOGIC SPECIFICATION ]</span>
-          <blockquote className="font-sans text-green-off-white-1 text-2xl md:text-3xl leading-tight reveal-child border-l-2 border-lime pl-6 italic">
-            "Reliability is built on continuous telemetry, clean separation of concerns, and verified code execution."
-          </blockquote>
-        </div>
+      {/* Cinematic Photo + Bio Section (replaces old About) */}
+      <section id="about">
+        <PhotoReveal />
       </section>
 
       {/* Services Section */}
-      <section id="services" className="px-8 py-20 bg-black stagger-reveal">
+      <section id="services" className="px-8 py-20 bg-black border-t border-dark-green-tint-1 stagger-reveal">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
@@ -397,8 +383,8 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-bold uppercase text-white font-sans">Daystar University</h3>
               <p className="text-xs text-green-off-white-2 mt-2 leading-relaxed">
-                • Diploma in Human Resources<br />
-                • Certificate in Business Management (Graduated 2024)
+                Diploma in Human Resources<br />
+                Certificate in Business Management (Graduated 2024)
               </p>
             </div>
             <div className="border-t border-dark-green-tint-1 pt-6">
@@ -471,7 +457,7 @@ export default function Home() {
             <div className="flex flex-col gap-2 text-xs font-bold uppercase text-white mt-4 font-mono">
               <span>Email: brianmukwe097@gmail.com</span>
               <span>Phone: +254 792 300 552</span>
-              <span>Location: Nairobi, Kenya — GMT+3</span>
+              <span>Location: Nairobi, Kenya -- GMT+3</span>
             </div>
           </div>
 
@@ -572,12 +558,12 @@ export default function Home() {
             <div className="flex flex-col gap-2 text-xs">
               <span className="text-[9px] tracking-widest text-lime uppercase font-bold font-mono">LEGAL</span>
               <a href="#privacy" className="text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
-              <a href="#terms" className="text-green-off-white-2 hover:text-white transition-colors">[ TERMS &amp; CONDITIONS ]</a>
+              <a href="#terms" className="text-green-off-white-2 hover:text-white transition-colors">[ TERMS & CONDITIONS ]</a>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-dark-green-tint-1 pt-6 text-[9px] text-green-off-white-2 uppercase font-mono">
-            <span>© 2026 Brian Mukwe Waliaula. All rights reserved.</span>
+            <span>2026 Brian Mukwe Waliaula. All rights reserved.</span>
           </div>
         </div>
       </footer>

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { View, PerspectiveCamera } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef, useEffect, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { PerspectiveCamera } from '@react-three/drei';
 
 function TelemetryCore({ scrollProgress = 0 }) {
   const groupRef = useRef();
@@ -13,7 +13,6 @@ function TelemetryCore({ scrollProgress = 0 }) {
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     
-    // Auto-rotations with scroll progress multipliers
     if (groupRef.current) {
       groupRef.current.rotation.y = time * 0.2 + scrollProgress * Math.PI * 2;
     }
@@ -68,7 +67,7 @@ function TelemetryCore({ scrollProgress = 0 }) {
         );
       })}
 
-      {/* Telemetry Dials & Sensors */}
+      {/* Telemetry Dials */}
       <mesh position={[0, 1.2, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.1, 0.15, 0.3, 8]} />
         <meshStandardMaterial color="#ffffff" metalness={1.0} roughness={0.0} />
@@ -82,14 +81,30 @@ function TelemetryCore({ scrollProgress = 0 }) {
 }
 
 export default function HeroCenterpiece({ scrollProgress = 0 }) {
-  const containerRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-black">
+        <div className="text-lime text-[10px] tracking-widest uppercase font-mono animate-pulse">
+          [ SYSTEM BOOTING... ]
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-[400px] relative">
-      <View track={containerRef} className="w-full h-full">
-        <PerspectiveCamera makeDefault position={[0, 0, 4.5]} fov={50} />
-        
-        {/* Scroll-modulated lights */}
+    <div className="w-full h-full min-h-[400px] relative">
+      <Canvas
+        dpr={[1, 2]}
+        camera={{ position: [0, 0, 4.5], fov: 50 }}
+        style={{ background: 'transparent' }}
+        gl={{ alpha: true, antialias: true }}
+      >
         <ambientLight intensity={0.2} />
         <directionalLight 
           position={[5, 5, 5]} 
@@ -109,7 +124,7 @@ export default function HeroCenterpiece({ scrollProgress = 0 }) {
         />
 
         <TelemetryCore scrollProgress={scrollProgress} />
-      </View>
+      </Canvas>
       <div className="absolute bottom-4 left-4 text-green-off-white-2 text-[9px] tracking-widest uppercase opacity-40 font-mono">
         [ SYSTEM METRIC CORE CORE.TELEMETRY_LOADED ]
       </div>
