@@ -155,7 +155,7 @@ export default function Home() {
       desc: 'Automated job application matching engine powered by n8n. Scrapes major local boards, processes relevancy with Groq LLM filters, and fires alerts to Telegram.',
       tags: ['n8n', 'Groq AI', 'Telegram API', 'Automation'],
       github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Chrome Gold'
+      screenshot: '/threadlite_screenshot.png'
     },
     {
       num: '03',
@@ -164,7 +164,7 @@ export default function Home() {
       desc: 'Dual-frontend farm records and inventory command database, comprising a React/Vite dashboard and a Flutter Android app featuring local Google ML Kit text OCR.',
       tags: ['React', 'Flutter', 'Firebase', 'Google ML Kit'],
       github: 'https://github.com/Glizocksama-2/birunda-farm',
-      screenshot: '/invoice_generator.jpg'
+      screenshot: '/shamba_screenshot.png'
     },
     {
       num: '04',
@@ -173,7 +173,7 @@ export default function Home() {
       desc: 'Streetwear e-commerce storefront. Replaced hardcoded authorization parameters with secure Supabase Auth and strict Row-Level Security database controls.',
       tags: ['React', 'Supabase Auth', 'Row-Level Security', 'UX Design'],
       github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Matte Black'
+      screenshot: '/gorosei_screenshot.png'
     },
     {
       num: '05',
@@ -182,7 +182,7 @@ export default function Home() {
       desc: 'Single-file gamified habit tracker PWA with SVG avatar layering, mood logs, and an AI coach proxy routing keys via Netlify serverless functions.',
       tags: ['React PWA', 'Netlify Functions', 'Groq API', 'Local Storage'],
       github: 'https://github.com/Glizocksama-2/rpgstats',
-      canvasStyle: 'Glassmorphism'
+      screenshot: '/liferpg_screenshot.png'
     },
     {
       num: '06',
@@ -210,6 +210,15 @@ export default function Home() {
       tags: ['Kotlin', 'Material Design', 'Android SDK', 'Input Validation'],
       github: 'https://github.com/Glizocksama-2',
       canvasStyle: 'Sport Royal'
+    },
+    {
+      num: '09',
+      title: 'Northwatch',
+      role: 'Full-Stack Developer',
+      desc: 'Tactical personal ledger command deck. Local-first architecture built to synchronize task management, financial monitoring, and credential auditing indicators.',
+      tags: ['React', 'Local-First', 'Telemetry', 'Ledger Engine'],
+      github: 'https://github.com/Glizocksama-2',
+      screenshot: '/northwatch_screenshot.png'
     }
   ];
 
@@ -292,7 +301,7 @@ export default function Home() {
           {/* Stats Widget */}
           <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full z-10">
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">8+</span>
+              <span className="text-2xl font-black text-lime">9+</span>
               <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
             </div>
             <div className="flex flex-col">
@@ -380,7 +389,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase reveal-text">8 Real Projects</h2>
+            <h2 className="text-4xl font-extrabold uppercase reveal-text">9 Real Projects</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
