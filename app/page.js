@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
+import ProjectCarousel from '@/components/ProjectCarousel';
 
 // Register GSAP ScrollTrigger on client side
 if (typeof window !== 'undefined') {
@@ -191,6 +192,7 @@ export default function Home() {
       desc: 'Personal AI Chief of Staff agent scraping daily developer trends, conducting system health tests every 30 minutes, and alerting via Telegram channels.',
       tags: ['n8n', 'Telegram Alerts', 'Render Hosting', 'System Scraper'],
       github: 'https://github.com/Glizocksama-2',
+      screenshot: null,
       canvasStyle: 'Industrial Red'
     },
     {
@@ -200,6 +202,7 @@ export default function Home() {
       desc: 'Six-page donor coordination hub accepting international USD cards settled to local banks via Pesapal API, with automated Resend transactional alerts.',
       tags: ['HTML/CSS', 'Pesapal API', 'Resend', 'AI Help Widget'],
       github: 'https://github.com/Glizocksama-2',
+      screenshot: null,
       canvasStyle: 'Fluid Aqua'
     },
     {
@@ -209,6 +212,7 @@ export default function Home() {
       desc: 'Android application for sports club tracking, integrating user registrations, validation, and structured WhatsApp sales pipelines.',
       tags: ['Kotlin', 'Material Design', 'Android SDK', 'Input Validation'],
       github: 'https://github.com/Glizocksama-2',
+      screenshot: null,
       canvasStyle: 'Sport Royal'
     },
     {
@@ -401,50 +405,8 @@ export default function Home() {
             <h2 className="text-4xl font-extrabold uppercase reveal-text">10 Real Projects</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((proj, idx) => (
-              <div key={idx} className="border border-dark-green-tint-1 p-8 bg-dark-green/5 flex flex-col justify-between hover:border-lime transition-all duration-500 magnetic-card">
-                <div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-3xl font-black text-lime">{proj.num}</span>
-                    <span className="text-[10px] tracking-widest text-green-off-white-2 uppercase font-bold">{proj.role}</span>
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold uppercase mt-4 text-white">{proj.title}</h3>
-                  
-                  <div className="w-full h-48 my-6 relative overflow-hidden bg-black border border-dark-green-tint-1">
-                    {proj.screenshot ? (
-                      <div 
-                        className="w-full h-full bg-cover bg-top opacity-90 hover:opacity-100 transition-opacity duration-300"
-                        style={{ backgroundImage: `url('${proj.screenshot}')` }}
-                      ></div>
-                    ) : (
-                      <HelmetCanvas scrollProgress={scrollProgress} styleName={proj.canvasStyle} />
-                    )}
-                  </div>
-
-                  <p className="text-sm text-green-off-white-2 leading-relaxed mt-2">{proj.desc}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mt-6">
-                    {proj.tags.map((t, i) => (
-                      <span key={i} className="text-[9px] tracking-wider uppercase bg-dark-green px-2.5 py-1 text-lime font-bold">{t}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-8 border-t border-dark-green-tint-1 pt-6 flex justify-end">
-                  <a 
-                    href={proj.github} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-xs font-bold uppercase tracking-widest text-lime hover:text-white transition-colors"
-                  >
-                    VIEW REPOSITORY →
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Interactive 3D Coverflow Carousel */}
+          <ProjectCarousel projects={projects} />
         </div>
       </section>
 
