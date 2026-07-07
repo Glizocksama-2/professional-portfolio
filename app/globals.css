@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,400..900;1,400..900&family=Playfair+Display:ital,wght@1,400..700&display=swap');
+
+@import "tailwindcss";
+
+
+:root {
+  /* Color */
+  --color--black: #111112; 
+  --color--white: #f4f4ed; 
+  --color--cream: #efefe5;
+  --color--dark-green: #282c20; 
+  --color--dark-green-tint-1: #3b3c38; 
+  --color--dark-green-tint-2: #535450;
+  --color--green-light: #ebeee0; 
+  --color--green-off-white-1: #dde1d2; 
+  --color--green-off-white-2: #b4b8a5;
+  --color--grey-1: #ebeee0; 
+  --color--grey-2: #c8cbbd; 
+  --color--grey-on-track: #b9bbad;
+  --color--lime: #d2ff00; 
+  --color-lime-off: #b2c73a; 
+  --color-lime-zero: #d2ff0000; 
+  --color--orange: #ff6b00;
+
+  /* Spacing */
+  --padding--container: 1.25rem; 
+  --padding--mini: 1rem; 
+  --padding--small: 2rem;
+  --padding--med: 3rem; 
+  --padding--large: 4rem; 
+  --padding--xlarge: 5rem;
+  --gap: 1.25rem; 
+  --grid-spacer: 31.51vh; 
+  --grid-col: 25.4375rem;
+  --on-t-nav-spacer: 5.375rem; 
+  --poduim-offset: -17.5rem; 
+  --oval-side-offset: 3rem;
+
+  /* Radius */
+  --radius--small: 1rem; 
+  --radius--med: 3rem; 
+  --radius--large: 6.25rem;
+
+  /* Type */
+  --text--eyebrow: 0.578125rem; 
+  --text--btn-tertiary: 0.875rem;
+  --text--btn-primary: 1rem; 
+  --text--h6: 1rem; 
+  --text--h5: 1.2rem; 
+  --text--h4: 1.5rem;
+  --text--reg: 1.6rem; 
+  --text--h3: 2rem; 
+  --text--btn-nav: 1.25rem; 
+  --text--med: 2.76rem;
+  --text--h2: 4.5rem; 
+  --text--h1: 4rem; 
+  --text--btn-footer: 1.875rem; 
+  --text--impact: 7.9375rem;
+
+  /* Motion */
+  --cubic-default: cubic-bezier(0.65, 0.05, 0, 1);
+  --duration-default: 0.75s;
+  --animation-default: var(--duration-default) var(--cubic-default);
+}
+
+@theme {
+  --color-black: var(--color--black);
+  --color-white: var(--color--white);
+  --color-cream: var(--color--cream);
+  --color-dark-green: var(--color--dark-green);
+  --color-dark-green-tint-1: var(--color--dark-green-tint-1);
+  --color-dark-green-tint-2: var(--color--dark-green-tint-2);
+  --color-green-light: var(--color--green-light);
+  --color-green-off-white-1: var(--color--green-off-white-1);
+  --color-green-off-white-2: var(--color--green-off-white-2);
+  --color-grey-1: var(--color--grey-1);
+  --color-grey-2: var(--color--grey-2);
+  --color-grey-on-track: var(--color--grey-on-track);
+  --color-lime: var(--color--lime);
+  --color-lime-off: var(--color-lime-off);
+  --color-orange: var(--color--orange);
+  
+  --font-sans: 'Mona Sans', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+body {
+  background-color: var(--color--black);
+  color: var(--color--white);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.font-brier {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+}
+
+/* Custom Scroll Cadence */
+html {
+  scroll-behavior: smooth;
+}
+
+.text-impact {
+  font-size: var(--text--impact);
+  line-height: 1.05;
+}
+
+@media (max-width: 768px) {
+  .text-impact {
+    font-size: clamp(3rem, 10vw, 5rem);
+  }
+}
