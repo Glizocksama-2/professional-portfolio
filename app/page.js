@@ -3,7 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
+
+// Register GSAP ScrollTrigger on client side
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 // Lazy-load R3F components below the fold for performance
 const HelmetCanvas = dynamic(() => import('@/components/HelmetCanvas'), {
@@ -19,24 +25,108 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '' });
   const [submitStatus, setSubmitStatus] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
   const mainRef = useRef();
 
   useEffect(() => {
-    const handleScroll = () => {
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? window.scrollY / docHeight : 0;
-      setScrollProgress(progress);
-    };
+    // GSAP ScrollTrigger animations
+    const ctx = gsap.context(() => {
+      // 1. Text slide-up reveals for headlines
+      gsap.utils.toArray('.reveal-text').forEach((text) => {
+        gsap.fromTo(text, 
+          { y: 100, opacity: 0 },
+          { 
+            y: 0, 
+            opacity: 1, 
+            duration: 1.2, 
+            ease: 'power4.out',
+            scrollTrigger: {
+              trigger: text,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse'
+            }
+          }
+        );
+      });
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+      // 2. Interactive card hover tilting and magnetic triggers
+      gsap.utils.toArray('.magnetic-card').forEach((card) => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          gsap.to(card, {
+            x: x * 0.15,
+            y: y * 0.15,
+            rotateX: -y * 0.05,
+            rotateY: x * 0.05,
+            duration: 0.3,
+            ease: 'power2.out',
+            transformPerspective: 1000
+          });
+        });
+
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card, {
+            x: 0,
+            y: 0,
+            rotateX: 0,
+            rotateY: 0,
+            duration: 0.6,
+            ease: 'power3.out'
+          });
+        });
+      });
+
+      // 3. Section wipe transitions
+      gsap.utils.toArray('.wipe-section').forEach((sec) => {
+        gsap.fromTo(sec,
+          { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' },
+          {
+            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: sec,
+              start: 'top bottom',
+              end: 'top top',
+              scrub: true
+            }
+          }
+        );
+      });
+
+      // 4. Parallax background offsets
+      gsap.utils.toArray('.parallax-bg').forEach((bg) => {
+        gsap.to(bg, {
+          yPercent: 20,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: bg,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      });
+
+      // 5. Scroll progress update for Three.js rotations
+      ScrollTrigger.create({
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          setScrollProgress(self.progress);
+        }
+      });
+    }, mainRef);
+
+    return () => ctx.revert();
   }, []);
 
   const services = [
     { title: 'Web Design', desc: 'Custom, premium typography and aesthetic grid structures.' },
     { title: 'Frontend', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
     { title: 'Backend', desc: 'Robust server routing, API logic, and scalable architectures.' },
-    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and client clients.' },
+    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and clients.' },
     { title: 'Systems Architecture', desc: 'Secure database setups, DNS config, and reverse proxies.' },
     { title: 'Landing Pages', desc: 'Highly optimized page-speed configurations and layouts.' },
     { title: 'Payment Gateway', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
@@ -176,10 +266,13 @@ export default function Home() {
         </div>
 
         {/* Center Portrait */}
-        <div className="absolute inset-0 flex items-center justify-center z-0">
+        <div className="absolute inset-0 flex items-center justify-center z-0 overflow-hidden">
           <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-dark-green relative border border-dark-green-tint-1 overflow-hidden">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 mix-blend-luminosity" style={{ backgroundImage: "url('/brian_portrait.png')" }}></div>
-            <div className="absolute bottom-6 left-6 text-white text-[10px] tracking-widest uppercase font-semibold">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 mix-blend-luminosity parallax-bg" 
+              style={{ backgroundImage: "url('/brian_portrait.png')" }}
+            ></div>
+            <div className="absolute bottom-6 left-6 text-white text-[10px] tracking-widest uppercase font-semibold z-10 bg-black/40 px-2 py-1">
               [ BRIAN MUKWE WALIAULA • NAIROBI, KENYA ]
             </div>
           </div>
@@ -187,8 +280,8 @@ export default function Home() {
 
         {/* Title Grid */}
         <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24">
-          <div className="flex flex-col">
-            <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase">
+          <div className="flex flex-col overflow-hidden">
+            <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase reveal-text">
               BRIAN<br />MUKWE<span className="text-lime">.</span>
             </h1>
             <p className="text-sm font-bold text-green-off-white-2 tracking-wide uppercase mt-4">
@@ -197,7 +290,7 @@ export default function Home() {
           </div>
 
           {/* Stats Widget */}
-          <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full">
+          <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full z-10">
             <div className="flex flex-col">
               <span className="text-2xl font-black text-lime">8+</span>
               <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
@@ -228,15 +321,15 @@ export default function Home() {
       <div className="h-[31.51vh]"></div>
 
       {/* About Section */}
-      <section id="about" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1 relative overflow-hidden">
+      <section id="about" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1 relative overflow-hidden wipe-section">
         <div className="max-w-4xl mx-auto flex flex-col gap-6 relative z-10">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ PERSONAL SUMMARY ]</span>
-          <p className="text-lg md:text-2xl text-white font-sans leading-relaxed">
+          <p className="text-lg md:text-2xl text-white font-sans leading-relaxed reveal-text">
             I build performant systems, automated scraper tools, e-commerce networks, and clean frontend UI configurations. From initial DNS routing parameters to final database security rule optimizations, I handle complete full-stack project cycles.
           </p>
 
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold mt-8">[ WORKING STYLE ]</span>
-          <blockquote className="font-brier text-green-off-white-1 text-2xl md:text-4xl leading-tight">
+          <blockquote className="font-brier text-green-off-white-1 text-2xl md:text-4xl leading-tight reveal-text">
             "High performance is built on telemetry, structured routines, and precise specifications. Every pipeline must be monitored, and every database query optimized for speed."
           </blockquote>
 
@@ -256,7 +349,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
+            <h2 className="text-4xl font-extrabold uppercase reveal-text">13 Service Areas</h2>
           </div>
 
           {/* Asymmetric Bento Grid */}
@@ -283,16 +376,16 @@ export default function Home() {
       <div className="h-[31.51vh]"></div>
 
       {/* Projects Section */}
-      <section id="projects" className="px-8 py-24 bg-black border-t border-dark-green-tint-1">
+      <section id="projects" className="px-8 py-24 bg-black border-t border-dark-green-tint-1 wipe-section">
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">8 Real Projects</h2>
+            <h2 className="text-4xl font-extrabold uppercase reveal-text">8 Real Projects</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((proj, idx) => (
-              <div key={idx} className="border border-dark-green-tint-1 p-8 bg-dark-green/5 flex flex-col justify-between hover:border-lime transition-all duration-500">
+              <div key={idx} className="border border-dark-green-tint-1 p-8 bg-dark-green/5 flex flex-col justify-between hover:border-lime transition-all duration-500 magnetic-card">
                 <div>
                   <div className="flex justify-between items-start">
                     <span className="text-3xl font-black text-lime">{proj.num}</span>
