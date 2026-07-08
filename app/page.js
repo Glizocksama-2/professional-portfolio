@@ -466,7 +466,7 @@ export default function Home() {
 
             <div 
               className="w-full h-40 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-              style={{ backgroundImage: "url('/anthropic_certificates.png')" }}
+              style={{ backgroundImage: "url('/certificates_grid.png')" }}
             ></div>
           </div>
         </div>

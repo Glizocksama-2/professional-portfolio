@@ -38,7 +38,7 @@ const StickyCard002 = ({
         scrollTrigger: {
           trigger: ".sticky-cards",
           start: "top 90px",
-          end: "+=1200px",
+          end: "+=5000px",
           pin: true,
           scrub: 1.2,
           pinSpacing: true,
