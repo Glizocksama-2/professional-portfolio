@@ -37,8 +37,8 @@ const StickyCard002 = ({
       const scrollTimeline = gsap.timeline({
         scrollTrigger: {
           trigger: ".sticky-cards",
-          start: "top top",
-          end: `+=${window.innerHeight * 2.0 * (totalCards - 1)}`,
+          start: "top 90px",
+          end: "+=1200px",
           pin: true,
           scrub: 1.2,
           pinSpacing: true,
@@ -91,11 +91,11 @@ const StickyCard002 = ({
   );
 
   return (
-    <div className={cn("relative w-full h-screen", className)} ref={container}>
-      <div className="sticky-cards relative flex h-screen w-full items-center justify-center overflow-hidden p-4 lg:p-12">
+    <div className={cn("relative w-full h-[550px]", className)} ref={container}>
+      <div className="sticky-cards relative flex h-[550px] w-full items-center justify-center overflow-hidden p-4 lg:p-12">
         <div
           className={cn(
-            "relative h-[75vh] w-full max-w-sm overflow-hidden rounded-2xl sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl border border-dark-green-tint-1 bg-black shadow-2xl",
+            "relative h-[480px] w-full max-w-sm overflow-hidden rounded-2xl sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl border border-dark-green-tint-1 bg-black shadow-2xl",
             containerClassName,
           )}
         >

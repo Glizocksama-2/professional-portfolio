@@ -369,21 +369,23 @@ export default function Home() {
       </section>
 
       {/* Visual Stack Showcase */}
-      <section id="stack" className="bg-black border-t border-dark-green-tint-1 stagger-reveal relative min-h-screen">
-        <div className="md:absolute md:top-20 md:left-12 z-20 flex flex-col gap-2 reveal-child max-w-xl p-8 md:p-0">
+      <section id="stack" className="bg-black border-t border-dark-green-tint-1 py-20 stagger-reveal">
+        <div className="max-w-6xl mx-auto px-8 flex flex-col gap-2 reveal-child">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SYSTEM INTERFACE STACK ]</span>
           <h2 className="text-4xl font-extrabold uppercase">Platform Viewports</h2>
           <p className="text-xs text-green-off-white-2 mt-2">
             Cinematic stacking telemetry showing our primary live dashboards and custom portal screenshots.
           </p>
         </div>
-        <StickyCard002 cards={[
-          { id: 1, image: "/fareast_screenshot.png", alt: "Fareast Ventures" },
-          { id: 2, image: "/shamba_screenshot.png", alt: "Shamba Command Center" },
-          { id: 3, image: "/gorosei_screenshot.png", alt: "Gorosei Storefront" },
-          { id: 4, image: "/northwatch_screenshot.png", alt: "Northwatch Ledger" },
-          { id: 5, image: "/tax_screenshot.png", alt: "Kenyan Tax Intelligence" },
-        ]} />
+        <div className="mt-8 reveal-child">
+          <StickyCard002 cards={[
+            { id: 1, image: "/fareast_screenshot.png", alt: "Fareast Ventures" },
+            { id: 2, image: "/shamba_screenshot.png", alt: "Shamba Command Center" },
+            { id: 3, image: "/gorosei_screenshot.png", alt: "Gorosei Storefront" },
+            { id: 4, image: "/northwatch_screenshot.png", alt: "Northwatch Ledger" },
+            { id: 5, image: "/tax_screenshot.png", alt: "Kenyan Tax Intelligence" },
+          ]} />
+        </div>
       </section>
 
       {/* Tech Stack Section */}
