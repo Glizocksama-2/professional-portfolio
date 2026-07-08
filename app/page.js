@@ -103,11 +103,11 @@ export default function Home() {
     {
       num: '01',
       title: 'Fareast Ventures',
-      role: 'Systems Developer',
-      desc: 'Premium Nairobi chauffeur platform featuring automated booking pipelines, real-time emails, Instasend payments routing, and comprehensive SEO performance tuning.',
-      tags: ['React', 'Tailwind CSS', 'Instasend', 'SEO Audit'],
-      github: 'https://github.com/Glizocksama-2/far-east-ventures',
-      screenshot: '/fareast_screenshot.png'
+      role: 'Full-Stack Developer',
+      desc: 'Corporate land investment portfolio portal for a firm based in Nakuru. Fully managed static deployment displaying real-time mapping details and land query processing.',
+      tags: ['React', 'Next.js', 'Tailwind CSS', 'Vercel Deployment'],
+      github: 'https://github.com/Glizocksama-2',
+      screenshot: '/shamba_screenshot.png'
     },
     {
       num: '02',
@@ -116,20 +116,20 @@ export default function Home() {
       desc: 'Automated job application matching engine powered by n8n. Scrapes major local boards, processes relevancy with Groq LLM filters, and fires alerts to Telegram.',
       tags: ['n8n', 'Groq AI', 'Telegram API', 'Automation'],
       github: 'https://github.com/Glizocksama-2',
-      screenshot: '/threadlite_screenshot.png'
+      screenshot: '/fareast_screenshot.png'
     },
     {
       num: '03',
-      title: 'Shamba Command Center',
+      title: 'Shamba Command',
       role: 'Full-Stack Developer',
       desc: 'Dual-frontend farm records and inventory command database, comprising a React/Vite dashboard and a Flutter Android app featuring local Google ML Kit text OCR.',
       tags: ['React', 'Flutter', 'Firebase', 'Google ML Kit'],
       github: 'https://github.com/Glizocksama-2/birunda-farm',
-      screenshot: '/shamba_screenshot.png'
+      screenshot: '/threadlite_screenshot.png'
     },
     {
       num: '04',
-      title: 'GOROSEI',
+      title: 'Threadlite',
       role: 'Full-Stack Developer',
       desc: 'Streetwear e-commerce storefront. Replaced hardcoded authorization parameters with secure Supabase Auth and strict Row-Level Security database controls.',
       tags: ['React', 'Supabase Auth', 'Row-Level Security', 'UX Design'],
@@ -165,7 +165,7 @@ export default function Home() {
     },
     {
       num: '08',
-      title: 'EStarz FC',
+      title: 'Homestarz FC',
       role: 'Mobile Developer',
       desc: 'Android application for sports club tracking, integrating user registrations, validation, and structured WhatsApp sales pipelines.',
       tags: ['Kotlin', 'Material Design', 'Android SDK', 'Input Validation'],
@@ -388,8 +388,9 @@ export default function Home() {
         </div>
         <div className="mt-8 reveal-child">
           <ThreeDHoverGallery images={[
-            "/fareast_screenshot.png",
             "/shamba_screenshot.png",
+            "/fareast_screenshot.png",
+            "/threadlite_screenshot.png",
             "/gorosei_screenshot.png",
             "/northwatch_screenshot.png",
             "/tax_screenshot.png"
