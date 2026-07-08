@@ -10,6 +10,7 @@ import { CrowdCanvas } from '@/components/v1/skiper39';
 import { TextRoll } from '@/components/v1/skiper58';
 import { StickyCard002 } from '@/components/v1/skiper17';
 import { ReactLenis } from 'lenis/react';
+import { PortfolioStatAnimator } from '@/components/v1/skiper37';
 
 // Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
@@ -292,15 +293,15 @@ export default function Home() {
           {/* Key Indicators */}
           <div className="grid grid-cols-3 gap-8 bg-black/85 border border-dark-green-tint-1 p-6 md:max-w-sm w-full">
             <div className="flex flex-col">
-              <span className="text-3xl font-black text-lime">10</span>
+              <PortfolioStatAnimator value={10} />
               <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPS</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-black text-lime">13</span>
+              <PortfolioStatAnimator value={13} />
               <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-black text-lime">20+</span>
+              <PortfolioStatAnimator value={20} suffix="+" />
               <span className="text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">CERTS</span>
             </div>
           </div>
