@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
+import { TextRoll } from '@/components/v1/skiper58';
 
 export default function ProjectsSlider3D({ projects = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -197,8 +198,8 @@ export default function ProjectsSlider3D({ projects = [] }) {
         <span className="text-lime text-[10px] tracking-widest uppercase font-mono font-bold">
           PROJECT {activeProject.num} // {activeProject.role}
         </span>
-        <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mt-2 font-sans">
-          {activeProject.title}
+        <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mt-2 font-sans flex justify-center">
+          <TextRoll center>{activeProject.title || ""}</TextRoll>
         </h3>
         <p className="text-sm text-green-off-white-2 mt-4 leading-relaxed max-w-lg mx-auto">
           {activeProject.desc}

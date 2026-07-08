@@ -283,7 +283,8 @@ export default function Home() {
         <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24 pb-8 reveal-child">
           <div className="flex flex-col">
             <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-none uppercase">
-              BRIAN<br />MUKWE<span className="text-lime">.</span>
+              <TextRoll>BRIAN</TextRoll>
+              <TextRoll>MUKWE.</TextRoll>
             </h1>
             <p className="text-xs font-bold text-green-off-white-2 tracking-widest uppercase mt-4">
               FULL-STACK DEVELOPER &amp; TELEMETRY ENGINEER
@@ -318,7 +319,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
+            <h2 className="text-4xl font-extrabold uppercase flex"><TextRoll>13 SERVICE AREAS</TextRoll></h2>
           </div>
 
           {/* Interactive Tabs */}
@@ -361,7 +362,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">10 Real Projects</h2>
+            <h2 className="text-4xl font-extrabold uppercase flex"><TextRoll>10 REAL PROJECTS</TextRoll></h2>
           </div>
 
           {/* High-Fidelity 3D Scroll Slider */}
@@ -375,7 +376,7 @@ export default function Home() {
       <section id="stack" className="bg-black border-t border-dark-green-tint-1 py-20 stagger-reveal">
         <div className="max-w-6xl mx-auto px-8 flex flex-col gap-2 reveal-child">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SYSTEM INTERFACE STACK ]</span>
-          <h2 className="text-4xl font-extrabold uppercase">Platform Viewports</h2>
+          <h2 className="text-4xl font-extrabold uppercase flex"><TextRoll>PLATFORM VIEWPORTS</TextRoll></h2>
           <p className="text-xs text-green-off-white-2 mt-2">
             Cinematic stacking telemetry showing our primary live dashboards and custom portal screenshots.
           </p>
@@ -401,7 +402,9 @@ export default function Home() {
                 <h3 className="text-xs font-bold tracking-widest uppercase text-lime mb-4">{stk.group}</h3>
                 <div className="flex flex-wrap gap-2">
                   {stk.items.map((item, i) => (
-                    <span key={i} className="text-[11px] px-3 py-1.5 bg-black text-green-off-white-1 uppercase font-semibold">{item}</span>
+                    <span key={i} className="text-[11px] px-3 py-1.5 bg-black text-green-off-white-1 uppercase font-semibold flex items-center justify-center">
+                      <TextRoll>{item.toUpperCase()}</TextRoll>
+                    </span>
                   ))}
                 </div>
               </div>
@@ -416,14 +419,18 @@ export default function Home() {
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ EDUCATION ]</span>
             <div>
-              <h3 className="text-xl font-bold uppercase text-white font-sans">Daystar University</h3>
+              <h3 className="text-xl font-bold uppercase text-white font-sans flex">
+                <TextRoll>DAYSTAR UNIVERSITY</TextRoll>
+              </h3>
               <p className="text-xs text-green-off-white-2 mt-2 leading-relaxed">
                 Diploma in Human Resources<br />
                 Certificate in Business Management (Graduated 2024)
               </p>
             </div>
             <div className="border-t border-dark-green-tint-1 pt-6">
-              <h3 className="text-xl font-bold uppercase text-white font-sans">Upper Hill School</h3>
+              <h3 className="text-xl font-bold uppercase text-white font-sans flex">
+                <TextRoll>UPPER HILL SCHOOL</TextRoll>
+              </h3>
               <p className="text-xs text-green-off-white-2 mt-2">Kenya Certificate of Secondary Education (KCSE)</p>
             </div>
             
@@ -485,7 +492,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
-            <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
+            <h2 className="text-3xl font-extrabold uppercase flex"><TextRoll>GET IN TOUCH</TextRoll></h2>
             <p className="text-xs text-green-off-white-2 leading-relaxed">
               Submit the form or reach out directly for systems, automations, and frontend deployments.
             </p>
@@ -573,8 +580,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-black border-t border-dark-green-tint-1 py-12 px-8">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
-          <h1 className="text-3xl md:text-6xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-8">
-            ALWAYS BRINGING THE FIGHT.
+          <h1 className="text-3xl md:text-6xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-8 flex justify-center">
+            <TextRoll center>SYSTEMS YOU CAN RELY ON.</TextRoll>
           </h1>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
