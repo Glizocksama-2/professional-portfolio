@@ -6,7 +6,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
 import PhotoReveal from '@/components/PhotoReveal';
-import CrowdCanvas from '@/components/CrowdCanvas';
+import { CrowdCanvas } from '@/components/v1/skiper39';
+import { TextRoll } from '@/components/v1/skiper58';
+import { StickyCard002 } from '@/components/v1/skiper17';
 
 // Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
@@ -237,11 +239,21 @@ export default function Home() {
           BRIAN MUKWE<span className="text-lime">.</span>
         </div>
         <div className="hidden md:flex gap-8 text-[10px] tracking-widest uppercase font-bold text-green-off-white-2">
-          <a href="#about" className="hover:text-lime transition-colors">ABOUT</a>
-          <a href="#services" className="hover:text-lime transition-colors">SERVICES</a>
-          <a href="#projects" className="hover:text-lime transition-colors">PROJECTS</a>
-          <a href="#tech" className="hover:text-lime transition-colors">TECH</a>
-          <a href="#credentials" className="hover:text-lime transition-colors">CREDENTIALS</a>
+          <a href="#about" className="hover:text-lime transition-colors">
+            <TextRoll>ABOUT</TextRoll>
+          </a>
+          <a href="#services" className="hover:text-lime transition-colors">
+            <TextRoll>SERVICES</TextRoll>
+          </a>
+          <a href="#projects" className="hover:text-lime transition-colors">
+            <TextRoll>PROJECTS</TextRoll>
+          </a>
+          <a href="#tech" className="hover:text-lime transition-colors">
+            <TextRoll>TECH</TextRoll>
+          </a>
+          <a href="#credentials" className="hover:text-lime transition-colors">
+            <TextRoll>CREDENTIALS</TextRoll>
+          </a>
         </div>
         <a 
           href="#contact" 
@@ -260,11 +272,9 @@ export default function Home() {
           </span>
         </div>
 
-        {/* 3D Centerpiece Portal Viewport */}
-        <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center">
-          <div className="w-[90vw] md:w-[60vw] h-[80vh] flex items-center justify-center">
-            <HeroCenterpiece scrollProgress={scrollProgress} />
-          </div>
+        {/* Animated Crowd Canvas */}
+        <div className="absolute inset-0 w-full h-[95vh] z-0 pointer-events-none">
+          <CrowdCanvas src="/images/peeps/all-peeps.png" rows={15} cols={7} />
         </div>
 
         <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24 pb-8 reveal-child">
@@ -358,6 +368,26 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Visual Stack Showcase */}
+      <section id="stack" className="bg-black border-t border-dark-green-tint-1 stagger-reveal">
+        <div className="max-w-6xl mx-auto px-8 pt-20 flex flex-col gap-2 reveal-child">
+          <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SYSTEM INTERFACE STACK ]</span>
+          <h2 className="text-4xl font-extrabold uppercase">Platform Viewports</h2>
+          <p className="text-xs text-green-off-white-2 max-w-md mt-2">
+            Cinematic stacking telemetry showing our primary live dashboards and custom portal screenshots.
+          </p>
+        </div>
+        <div className="w-full h-[70vh] min-h-[500px] relative overflow-hidden reveal-child">
+          <StickyCard002 cards={[
+            { id: 1, image: "/fareast_screenshot.png", alt: "Fareast Ventures" },
+            { id: 2, image: "/shamba_screenshot.png", alt: "Shamba Command Center" },
+            { id: 3, image: "/gorosei_screenshot.png", alt: "Gorosei Storefront" },
+            { id: 4, image: "/northwatch_screenshot.png", alt: "Northwatch Ledger" },
+            { id: 5, image: "/tax_screenshot.png", alt: "Kenyan Tax Intelligence" },
+          ]} />
+        </div>
+      </section>
+
       {/* Tech Stack Section */}
       <section id="tech" className="px-8 py-20 bg-dark-green border-y border-dark-green-tint-1 stagger-reveal">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
@@ -448,12 +478,8 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal relative overflow-hidden">
-        {/* Animated background crowd */}
-        <div className="absolute inset-0 pointer-events-none opacity-15 z-0">
-          <CrowdCanvas src="/images/peeps/all-peeps.png" rows={15} cols={7} />
-        </div>
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
             <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
