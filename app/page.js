@@ -8,7 +8,7 @@ import Marquee from '@/components/Marquee';
 import PhotoReveal from '@/components/PhotoReveal';
 import { CrowdCanvas } from '@/components/v1/skiper39';
 import { TextRoll } from '@/components/v1/skiper58';
-import { StickyCard002 } from '@/components/v1/skiper17';
+import ThreeDHoverGallery from '@/components/lightswind/3d-hover-gallery';
 import { ReactLenis } from 'lenis/react';
 import { PortfolioStatAnimator } from '@/components/v1/skiper37';
 
@@ -234,7 +234,12 @@ export default function Home() {
 
   return (
     <ReactLenis root>
-      <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
+      <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black relative">
+        
+        {/* Global 3D ShaderGradient Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none w-screen h-screen">
+          <HeroCenterpiece />
+        </div>
       
       {/* Sticky Navigation */}
       <nav className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
@@ -267,7 +272,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black stagger-reveal">
+      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black z-10 stagger-reveal">
         <div className="z-10 self-start mt-4 reveal-child">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[9px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
             <span className="w-1.5 h-1.5 bg-lime rounded-full animate-ping"></span>
@@ -315,7 +320,7 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="px-8 py-20 bg-black border-t border-dark-green-tint-1 stagger-reveal">
+      <section id="services" className="px-8 py-20 bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
@@ -358,7 +363,7 @@ export default function Home() {
       </section>
 
       {/* Projects Section - 3D Slider */}
-      <section id="projects" className="px-8 py-20 bg-black border-t border-dark-green-tint-1 stagger-reveal">
+      <section id="projects" className="px-8 py-20 bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
@@ -373,7 +378,7 @@ export default function Home() {
       </section>
 
       {/* Visual Stack Showcase */}
-      <section id="stack" className="bg-black border-t border-dark-green-tint-1 py-20 stagger-reveal">
+      <section id="stack" className="bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 py-20 stagger-reveal relative z-10">
         <div className="max-w-6xl mx-auto px-8 flex flex-col gap-2 reveal-child">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SYSTEM INTERFACE STACK ]</span>
           <h2 className="text-4xl font-extrabold uppercase flex"><TextRoll>PLATFORM VIEWPORTS</TextRoll></h2>
@@ -382,18 +387,18 @@ export default function Home() {
           </p>
         </div>
         <div className="mt-8 reveal-child">
-          <StickyCard002 cards={[
-            { id: 1, image: "/fareast_screenshot.png", alt: "Fareast Ventures" },
-            { id: 2, image: "/shamba_screenshot.png", alt: "Shamba Command Center" },
-            { id: 3, image: "/gorosei_screenshot.png", alt: "Gorosei Storefront" },
-            { id: 4, image: "/northwatch_screenshot.png", alt: "Northwatch Ledger" },
-            { id: 5, image: "/tax_screenshot.png", alt: "Kenyan Tax Intelligence" },
+          <ThreeDHoverGallery images={[
+            "/fareast_screenshot.png",
+            "/shamba_screenshot.png",
+            "/gorosei_screenshot.png",
+            "/northwatch_screenshot.png",
+            "/tax_screenshot.png"
           ]} />
         </div>
       </section>
 
       {/* Tech Stack Section */}
-      <section id="tech" className="px-8 py-20 bg-dark-green border-y border-dark-green-tint-1 stagger-reveal">
+      <section id="tech" className="px-8 py-20 bg-dark-green/60 backdrop-blur-md border-y border-dark-green-tint-1 stagger-reveal relative z-10">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold reveal-child">[ CURRENT SYSTEM TOOLS ]</span>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-child">
@@ -414,7 +419,7 @@ export default function Home() {
       </section>
 
       {/* Credentials Section */}
-      <section id="credentials" className="px-8 py-20 bg-black stagger-reveal">
+      <section id="credentials" className="px-8 py-20 bg-black/60 backdrop-blur-md stagger-reveal relative z-10">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ EDUCATION ]</span>
@@ -488,7 +493,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal">
+      <section id="contact" className="px-8 py-20 bg-dark-green/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
@@ -578,7 +583,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-dark-green-tint-1 py-12 px-8">
+      <footer className="bg-black/80 backdrop-blur-md border-t border-dark-green-tint-1 py-12 px-8 relative z-10">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <h1 className="text-3xl md:text-6xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-8 flex justify-center">
             <TextRoll center>SYSTEMS YOU CAN RELY ON.</TextRoll>

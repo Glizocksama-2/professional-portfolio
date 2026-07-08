@@ -78,7 +78,7 @@ export default function PhotoReveal() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative px-8 py-20 bg-black overflow-hidden">
+    <section ref={sectionRef} className="relative px-8 py-20 bg-black/60 backdrop-blur-md overflow-hidden z-10">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
         {/* Photo Side - Asymmetric Left */}
         <div className="md:col-span-5 relative">
