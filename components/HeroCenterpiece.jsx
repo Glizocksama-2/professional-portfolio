@@ -34,9 +34,9 @@ export default function HeroCenterpiece() {
           fov={40}
           frameRate={10}
           gizmoHelper="hide"
-          grain="on"
+          grain="off"
           lightType="3d"
-          pixelDensity={0.8}
+          pixelDensity={0.5}
           positionX={-1.4}
           positionY={0}
           positionZ={0}
