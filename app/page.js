@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Marquee from '@/components/Marquee';
 import PhotoReveal from '@/components/PhotoReveal';
+import CrowdCanvas from '@/components/CrowdCanvas';
 
 // Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
@@ -42,6 +43,7 @@ export default function Home() {
   const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '' });
   const [submitStatus, setSubmitStatus] = useState('');
   const mainRef = useRef();
+
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -446,8 +448,12 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+      <section id="contact" className="px-8 py-20 bg-dark-green border-t border-dark-green-tint-1 stagger-reveal relative overflow-hidden">
+        {/* Animated background crowd */}
+        <div className="absolute inset-0 pointer-events-none opacity-15 z-0">
+          <CrowdCanvas src="/images/peeps/all-peeps.png" rows={15} cols={7} />
+        </div>
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
           <div className="flex flex-col gap-6 reveal-child">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
             <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
