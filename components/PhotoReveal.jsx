@@ -57,11 +57,20 @@ export default function PhotoReveal() {
         0.4
       );
 
-      // Caption text reveal
-      tl.fromTo(captionRef.current,
+      // Caption text reveal - separate from scrub for perfect readability
+      gsap.fromTo(captionRef.current,
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-        0.5
+        { 
+          y: 0, 
+          opacity: 1, 
+          duration: 0.8, 
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: captionRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          }
+        }
       );
     }, sectionRef);
 
