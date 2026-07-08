@@ -96,7 +96,7 @@ const TextRoll = ({ children, className, center = false }) => {
               className="inline-block"
               key={i}
             >
-              {l}
+              {l === " " ? "\u00a0" : l}
             </motion.span>
           );
         })}
@@ -124,7 +124,7 @@ const TextRoll = ({ children, className, center = false }) => {
               className="inline-block"
               key={i}
             >
-              {l}
+              {l === " " ? "\u00a0" : l}
             </motion.span>
           );
         })}
