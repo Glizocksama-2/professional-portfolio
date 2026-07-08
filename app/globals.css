@@ -100,7 +100,7 @@ body {
 
 /* Custom Scroll Cadence */
 html {
-  scroll-behavior: smooth;
+  /* Disabled CSS smooth scroll to prevent conflicts with GSAP ScrollTrigger and Lenis */
 }
 
 .text-impact {

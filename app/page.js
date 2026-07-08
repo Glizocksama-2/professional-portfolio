@@ -9,6 +9,7 @@ import PhotoReveal from '@/components/PhotoReveal';
 import { CrowdCanvas } from '@/components/v1/skiper39';
 import { TextRoll } from '@/components/v1/skiper58';
 import { StickyCard002 } from '@/components/v1/skiper17';
+import { ReactLenis } from 'lenis/react';
 
 // Register GSAP ScrollTrigger
 if (typeof window !== 'undefined') {
@@ -231,7 +232,8 @@ export default function Home() {
   };
 
   return (
-    <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
+    <ReactLenis root>
+      <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
       
       {/* Sticky Navigation */}
       <nav className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
@@ -599,6 +601,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </main>
+      </main>
+    </ReactLenis>
   );
 }
