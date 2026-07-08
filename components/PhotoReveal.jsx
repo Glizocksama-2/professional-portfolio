@@ -20,9 +20,11 @@ export default function PhotoReveal() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 80%',
-          end: 'bottom 20%',
+          start: 'top top',
+          end: '+=150%',
+          pin: true,
           scrub: 1.2,
+          anticipatePin: 1,
         }
       });
 
@@ -37,8 +39,8 @@ export default function PhotoReveal() {
           scale: 1.0, 
           clipPath: 'inset(0% 0% 0% 0%)',
           filter: 'brightness(1) contrast(1)',
-          duration: 1,
-          ease: 'power2.out',
+          duration: 1.5,
+          ease: 'power2.inOut',
         },
         0
       );
@@ -46,22 +48,22 @@ export default function PhotoReveal() {
       // Overlay fade out
       tl.fromTo(overlayRef.current,
         { opacity: 1 },
-        { opacity: 0, duration: 0.6 },
-        0.3
+        { opacity: 0, duration: 1.0 },
+        0.5
       );
 
       // Caption line draw
       tl.fromTo(lineRef.current,
         { scaleX: 0 },
-        { scaleX: 1, duration: 0.5, ease: 'power2.out' },
-        0.4
+        { scaleX: 1, duration: 0.8, ease: 'power2.out' },
+        0.8
       );
 
       // Caption text reveal
       tl.fromTo(captionRef.current,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-        0.5
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, ease: 'power2.out' },
+        1.0
       );
     }, sectionRef);
 
@@ -69,7 +71,7 @@ export default function PhotoReveal() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative px-8 py-20 bg-black overflow-hidden">
+    <section ref={sectionRef} className="relative px-8 min-h-screen bg-black overflow-hidden flex items-center justify-center">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
         {/* Photo Side - Asymmetric Left */}
         <div className="md:col-span-5 relative">
