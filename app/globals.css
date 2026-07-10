@@ -2,63 +2,84 @@
 
 
 :root {
-  /* Color */
-  --color--black: #111112; 
-  --color--white: #f4f4ed; 
+  /* Brand palette (constant across themes) */
+  --color--black: #111112;
+  --color--white: #f4f4ed;
   --color--cream: #efefe5;
-  --color--dark-green: #282c20; 
-  --color--dark-green-tint-1: #3b3c38; 
+  --color--dark-green: #282c20;
+  --color--dark-green-tint-1: #3b3c38;
   --color--dark-green-tint-2: #535450;
-  --color--green-light: #ebeee0; 
-  --color--green-off-white-1: #dde1d2; 
+  --color--green-light: #ebeee0;
+  --color--green-off-white-1: #dde1d2;
   --color--green-off-white-2: #b4b8a5;
-  --color--grey-1: #ebeee0; 
-  --color--grey-2: #c8cbbd; 
+  --color--grey-1: #ebeee0;
+  --color--grey-2: #c8cbbd;
   --color--grey-on-track: #b9bbad;
-  --color--lime: #d2ff00; 
-  --color-lime-off: #b2c73a; 
-  --color-lime-zero: #d2ff0000; 
+  --color--lime: #d2ff00;
+  --color-lime-off: #b2c73a;
+  --color-lime-zero: #d2ff0000;
   --color--orange: #ff6b00;
+  /* Lime darkened to ~4.5:1 contrast on cream, for accent text in light mode */
+  --color--lime-deep: #5f7000;
+
+  /* Semantic tokens — dark theme (default) */
+  --surface: var(--color--black);
+  --surface-2: var(--color--dark-green);
+  --line: var(--color--dark-green-tint-1);
+  --body-text: var(--color--white);
+  --muted-text: var(--color--green-off-white-2);
+  --accent-text: var(--color--lime);
 
   /* Spacing */
-  --padding--container: 1.25rem; 
-  --padding--mini: 1rem; 
+  --padding--container: 1.25rem;
+  --padding--mini: 1rem;
   --padding--small: 2rem;
-  --padding--med: 3rem; 
-  --padding--large: 4rem; 
+  --padding--med: 3rem;
+  --padding--large: 4rem;
   --padding--xlarge: 5rem;
-  --gap: 1.25rem; 
-  --grid-spacer: 31.51vh; 
+  --gap: 1.25rem;
+  --grid-spacer: 31.51vh;
   --grid-col: 25.4375rem;
-  --on-t-nav-spacer: 5.375rem; 
-  --poduim-offset: -17.5rem; 
+  --on-t-nav-spacer: 5.375rem;
+  --poduim-offset: -17.5rem;
   --oval-side-offset: 3rem;
 
   /* Radius */
-  --radius--small: 1rem; 
-  --radius--med: 3rem; 
+  --radius--small: 1rem;
+  --radius--med: 3rem;
   --radius--large: 6.25rem;
 
   /* Type */
-  --text--eyebrow: 0.578125rem; 
+  --text--eyebrow: 0.578125rem;
   --text--btn-tertiary: 0.875rem;
-  --text--btn-primary: 1rem; 
-  --text--h6: 1rem; 
-  --text--h5: 1.2rem; 
+  --text--btn-primary: 1rem;
+  --text--h6: 1rem;
+  --text--h5: 1.2rem;
   --text--h4: 1.5rem;
-  --text--reg: 1.6rem; 
-  --text--h3: 2rem; 
-  --text--btn-nav: 1.25rem; 
+  --text--reg: 1.6rem;
+  --text--h3: 2rem;
+  --text--btn-nav: 1.25rem;
   --text--med: 2.76rem;
-  --text--h2: 4.5rem; 
-  --text--h1: 4rem; 
-  --text--btn-footer: 1.875rem; 
+  --text--h2: 4.5rem;
+  --text--h1: 4rem;
+  --text--btn-footer: 1.875rem;
   --text--impact: 7.9375rem;
 
   /* Motion */
   --cubic-default: cubic-bezier(0.65, 0.05, 0, 1);
   --duration-default: 0.75s;
   --animation-default: var(--duration-default) var(--cubic-default);
+}
+
+/* Light theme: creams from the same brand palette; lime darkened for
+   readable accent text (acid lime on cream fails contrast) */
+[data-theme='light'] {
+  --surface: var(--color--cream);
+  --surface-2: var(--color--green-light);
+  --line: var(--color--grey-2);
+  --body-text: var(--color--black);
+  --muted-text: var(--color--dark-green-tint-2);
+  --accent-text: var(--color--lime-deep);
 }
 
 @theme {
@@ -76,19 +97,29 @@
   --color-grey-on-track: var(--color--grey-on-track);
   --color-lime: var(--color--lime);
   --color-lime-off: var(--color-lime-off);
+  --color-lime-deep: var(--color--lime-deep);
   --color-orange: var(--color--orange);
-  
+
+  /* Semantic, theme-aware colors */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-body: var(--body-text);
+  --color-muted: var(--muted-text);
+  --color-accent: var(--accent-text);
+
   --font-sans: var(--font-mona-sans), system-ui, sans-serif;
   --font-serif: var(--font-playfair), Georgia, serif;
 }
 
 body {
-  background-color: var(--color--black);
-  color: var(--color--white);
+  background-color: var(--surface);
+  color: var(--body-text);
   font-family: var(--font-sans);
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-brier {
@@ -99,6 +130,51 @@ body {
 /* Custom Scroll Cadence */
 html {
   scroll-behavior: smooth;
+}
+
+/* Visible focus for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/* Skip-to-content link: hidden until focused */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  background: var(--color--lime);
+  color: var(--color--black);
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+/* Cursor spotlight overlay for TiltCard */
+.spotlight-card {
+  position: relative;
+}
+.spotlight-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    350px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(210, 255, 0, 0.08),
+    transparent 60%
+  );
+}
+.spotlight-card:hover::after {
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -112,6 +188,18 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  nav,
+  footer,
+  .print-hide {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
   }
 }
 
