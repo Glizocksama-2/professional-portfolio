@@ -156,6 +156,63 @@ html {
   letter-spacing: 0.1em;
 }
 
+/* Scroll-reveal: GPU-only (opacity + transform), applied via JS so content
+   is never hidden when JS is off */
+.reveal-pending {
+  opacity: 0;
+  transform: translateY(36px);
+}
+.reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.8s var(--cubic-default), transform 0.8s var(--cubic-default);
+}
+
+/* Hero entrance: staggered rise on load */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes hero-frame {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hero-anim {
+  animation: hero-rise 0.9s var(--cubic-default) both;
+}
+.hero-frame {
+  animation: hero-frame 1.2s var(--cubic-default) both;
+}
+
+/* Slow ambient drift for generative project art */
+@keyframes art-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-6px, 4px) rotate(0.8deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+.art-drift {
+  animation: art-drift 14s ease-in-out infinite;
+  transform-origin: center;
+}
+
 /* Cursor spotlight overlay for TiltCard */
 .spotlight-card {
   position: relative;

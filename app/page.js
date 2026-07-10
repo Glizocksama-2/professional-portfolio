@@ -1,10 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import Marquee from '@/components/Marquee';
 import ProjectArt from '@/components/ProjectArt';
+import RevealOnScroll from '@/components/RevealOnScroll';
+
+// three.js stays out of the initial bundle; each canvas only mounts when
+// its card nears the viewport (IntersectionObserver inside HelmetCanvas)
+const HelmetCanvas = dynamic(() => import('@/components/HelmetCanvas'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-dark-green-tint-1 animate-pulse">
+      <div className="text-lime text-[10px] tracking-widest uppercase">LOADING 3D SYSTEM...</div>
+    </div>
+  ),
+});
 import TiltCard from '@/components/TiltCard';
 import ThemeToggle from '@/components/ThemeToggle';
 import MagneticButton from '@/components/MagneticButton';
@@ -53,6 +66,7 @@ export default function Home() {
 
   return (
     <main id="main-content" className="w-full bg-surface min-h-screen text-body overflow-x-hidden selection:bg-lime selection:text-black pb-14 md:pb-0">
+      <RevealOnScroll />
       {/* Navigation Header */}
       <nav className="sticky top-0 bg-surface/80 backdrop-blur-md border-b border-line z-40 px-8 py-4 flex justify-between items-center print-hide">
         <div className="text-xl font-extrabold tracking-tighter uppercase font-sans">
@@ -79,7 +93,7 @@ export default function Home() {
       {/* Hero Section */}
       <section id="hero" className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden">
         {/* Availability Badge */}
-        <div className="z-10 self-start mt-6 flex items-center gap-4 flex-wrap">
+        <div className="z-10 self-start mt-6 flex items-center gap-4 flex-wrap hero-anim">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-surface-2 text-[10px] text-accent font-bold tracking-widest uppercase border border-line">
             <span className="w-1.5 h-1.5 bg-lime rounded-full animate-ping"></span>
             AVAILABLE FOR FREELANCE PROJECTS
@@ -89,7 +103,7 @@ export default function Home() {
 
         {/* Center Portrait */}
         <div className="absolute inset-0 flex items-center justify-center z-0">
-          <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-surface-2 relative border border-line overflow-hidden">
+          <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-surface-2 relative border border-line overflow-hidden hero-frame">
             <Image
               src="/brian_portrait.png"
               alt="Portrait of Brian Mukwe Waliaula"
@@ -106,7 +120,7 @@ export default function Home() {
 
         {/* Title Grid */}
         <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24">
-          <div className="flex flex-col">
+          <div className="flex flex-col hero-anim" style={{ animationDelay: '0.15s' }}>
             <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase">
               BRIAN<br />MUKWE<span className="text-accent">.</span>
             </h1>
@@ -116,7 +130,7 @@ export default function Home() {
           </div>
 
           {/* Stats Widget */}
-          <div className="grid grid-cols-3 gap-6 bg-surface/60 backdrop-blur-md border border-line p-6 md:max-w-md w-full">
+          <div className="grid grid-cols-3 gap-6 bg-surface/60 backdrop-blur-md border border-line p-6 md:max-w-md w-full hero-anim" style={{ animationDelay: '0.3s' }}>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-accent">8+</span>
               <span className="text-[9px] tracking-widest text-muted uppercase mt-1">SHIPPED</span>
@@ -133,7 +147,7 @@ export default function Home() {
         </div>
 
         {/* CTA Buttons */}
-        <div className="z-10 flex gap-4 mt-8 pb-12">
+        <div className="z-10 flex gap-4 mt-8 pb-12 hero-anim" style={{ animationDelay: '0.45s' }}>
           <MagneticButton href="#projects" className="bg-lime text-black px-8 py-3.5 font-bold uppercase tracking-wider text-xs border border-lime hover:opacity-80 transition-all duration-300">
             VIEW PROJECTS
           </MagneticButton>
@@ -236,7 +250,7 @@ export default function Home() {
                         className="object-cover object-top opacity-90 hover:opacity-100 transition-opacity duration-300"
                       />
                     ) : (
-                      <ProjectArt seed={proj.title} />
+                      <HelmetCanvas styleName={proj.canvasStyle} />
                     )}
                   </div>
 

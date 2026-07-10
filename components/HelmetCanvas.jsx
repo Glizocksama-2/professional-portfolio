@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Center, PerspectiveCamera } from '@react-three/drei';
+import { scrollState, ensureScrollTracking } from '@/lib/scroll-progress';
 
 // Material palettes so each project's canvasStyle actually looks different
 const STYLES = {
@@ -22,8 +23,11 @@ function HelmetModel({ style }) {
   useFrame((state) => {
     if (meshRef.current) {
       const t = state.clock.getElapsedTime();
-      meshRef.current.rotation.y = t * 0.15;
-      meshRef.current.rotation.x = Math.sin(t * 0.2) * 0.05;
+      // Auto-rotation + scroll-driven spin, read from the shared store —
+      // no React re-renders anywhere on scroll
+      meshRef.current.rotation.y = t * 0.15 + scrollState.progress * Math.PI * 2;
+      meshRef.current.rotation.x =
+        Math.sin(t * 0.2) * 0.05 + Math.sin(scrollState.progress * Math.PI) * 0.3;
     }
   });
 
@@ -77,13 +81,20 @@ function HelmetModel({ style }) {
 export default function HelmetCanvas({ styleName = 'Porcelain' }) {
   const wrapperRef = useRef();
   const [inView, setInView] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const style = STYLES[styleName] || STYLES.Porcelain;
 
   // Only mount the WebGL context while the card is near the viewport —
   // browsers cap concurrent contexts and idle canvases waste GPU/battery.
   useEffect(() => {
+    ensureScrollTracking();
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const el = wrapperRef.current;
     if (!el) return;
+    // Synchronous first check — IO callbacks can be delayed (e.g. hidden
+    // tabs), and a card already on screen should render immediately
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 200 && rect.bottom > -200) setInView(true);
     const observer = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
       { rootMargin: '200px' }
@@ -95,7 +106,14 @@ export default function HelmetCanvas({ styleName = 'Porcelain' }) {
   return (
     <div ref={wrapperRef} className="w-full h-full flex items-center justify-center relative">
       {inView && (
-        <Canvas shadows>
+        <Canvas
+          shadows
+          // Cap resolution and prefer the efficiency GPU: visually identical
+          // on cards this size, dramatically cheaper on retina/mobile
+          dpr={[1, 1.5]}
+          gl={{ powerPreference: 'low-power', antialias: true }}
+          frameloop={reducedMotion ? 'demand' : 'always'}
+        >
           <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={50} />
           <ambientLight intensity={0.7} />
           <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
