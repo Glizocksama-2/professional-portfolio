@@ -55,6 +55,7 @@ export default function ProjectArt({ seed, className = '' }) {
       aria-label={`Generative artwork for ${seed}`}
     >
       <rect width="400" height="200" fill="#111112" />
+      <g className="art-drift">
       {shapes.map((sh, i) =>
         sh.type === 'rect' ? (
           <rect key={i} x={sh.x} y={sh.y} width={sh.w} height={sh.h} fill={sh.color} opacity={sh.o} transform={`rotate(${sh.r} ${sh.x} ${sh.y})`} />
@@ -64,6 +65,7 @@ export default function ProjectArt({ seed, className = '' }) {
           <line key={i} x1={sh.x} y1={sh.y} x2={sh.x2} y2={sh.y2} stroke={sh.color} strokeWidth={sh.w} opacity={sh.o} />
         )
       )}
+      </g>
       <text x="12" y="188" fill="#d2ff00" fontSize="9" fontFamily="monospace" letterSpacing="2" opacity="0.6">
         {`[ ${seed.toUpperCase()} ]`}
       </text>
