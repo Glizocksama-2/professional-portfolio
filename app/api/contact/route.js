@@ -9,6 +9,13 @@ const hits = new Map();
 function rateLimited(ip) {
   const now = Date.now();
   const windowStart = now - 60_000;
+  // Prune stale IPs so the map can't grow unbounded under a spray of
+  // spoofed X-Forwarded-For values
+  if (hits.size > 1000) {
+    for (const [key, times] of hits) {
+      if (times.every((t) => t <= windowStart)) hits.delete(key);
+    }
+  }
   const recent = (hits.get(ip) || []).filter((t) => t > windowStart);
   recent.push(now);
   hits.set(ip, recent);
@@ -16,6 +23,12 @@ function rateLimited(ip) {
 }
 
 export async function POST(request) {
+  // Reject oversized payloads before parsing
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 20_000) {
+    return NextResponse.json({ error: 'Payload too large.' }, { status: 413 });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -30,7 +43,8 @@ export async function POST(request) {
     return NextResponse.json({ ok: true });
   }
 
-  if (!name?.trim() || !email?.trim() || !service?.trim() || !message?.trim()) {
+  const fields = [name, email, service, message];
+  if (fields.some((f) => typeof f !== 'string' || !f.trim())) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
