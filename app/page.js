@@ -10,6 +10,13 @@ import ThemeToggle from '@/components/ThemeToggle';
 import MagneticButton from '@/components/MagneticButton';
 import NairobiClock from '@/components/NairobiClock';
 import Terminal from '@/components/Terminal';
+import TrustBar from '@/components/TrustBar';
+import ProcessSection from '@/components/ProcessSection';
+import PricingSection from '@/components/PricingSection';
+import FaqSection from '@/components/FaqSection';
+import PortfolioShowcase from '@/components/PortfolioShowcase';
+import PortfolioSlider from '@/components/PortfolioSlider';
+import BookingDialog from '@/components/BookingDialog';
 import { bio, services, projects, techStacks, testimonials, education, certifications } from '@/lib/content';
 
 export default function Home() {
@@ -136,6 +143,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Trust Bar */}
+      <TrustBar />
+
       {/* Breathing Room */}
       <div className="h-[31.51vh]"></div>
 
@@ -261,6 +271,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Portfolio Wall + Slider (from sample.html patterns) */}
+      <PortfolioShowcase />
+      <PortfolioSlider />
+
       {/* Breathing Room */}
       <div className="h-[31.51vh]"></div>
 
@@ -297,6 +311,11 @@ export default function Home() {
           <Terminal />
         </div>
       </section>
+
+      {/* Process → Pricing → FAQ (client-conversion funnel from sample.html) */}
+      <ProcessSection />
+      <PricingSection />
+      <FaqSection />
 
       {/* Breathing Room */}
       <div className="h-[31.51vh]"></div>
@@ -523,6 +542,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <BookingDialog />
     </main>
   );
 }
