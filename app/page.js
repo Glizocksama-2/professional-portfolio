@@ -1,42 +1,30 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import gsap from 'gsap';
+import Image from 'next/image';
 import Marquee from '@/components/Marquee';
 
 // Lazy-load R3F components below the fold for performance
 const HelmetCanvas = dynamic(() => import('@/components/HelmetCanvas'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[250px] flex items-center justify-center bg-dark-green-tint-1 animate-pulse">
+    <div className="w-full h-full flex items-center justify-center bg-dark-green-tint-1 animate-pulse">
       <div className="text-lime text-[10px] tracking-widest uppercase">LOADING 3D SYSTEM...</div>
     </div>
   )
 });
 
 export default function Home() {
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '' });
-  const [submitStatus, setSubmitStatus] = useState('');
-  const mainRef = useRef();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? window.scrollY / docHeight : 0;
-      setScrollProgress(progress);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '', company: '' });
+  const [submitStatus, setSubmitStatus] = useState('IDLE'); // IDLE | SENDING | SUCCESS | ERROR
+  const [submitError, setSubmitError] = useState('');
 
   const services = [
     { title: 'Web Design', desc: 'Custom, premium typography and aesthetic grid structures.' },
     { title: 'Frontend', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
     { title: 'Backend', desc: 'Robust server routing, API logic, and scalable architectures.' },
-    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and client clients.' },
+    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and client applications.' },
     { title: 'Systems Architecture', desc: 'Secure database setups, DNS config, and reverse proxies.' },
     { title: 'Landing Pages', desc: 'Highly optimized page-speed configurations and layouts.' },
     { title: 'Payment Gateway', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
@@ -137,14 +125,30 @@ export default function Home() {
     setContactForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setSubmitStatus('SUCCESS');
-    setContactForm({ name: '', email: '', service: '', message: '' });
+    setSubmitStatus('SENDING');
+    setSubmitError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Something went wrong.');
+      }
+      setSubmitStatus('SUCCESS');
+      setContactForm({ name: '', email: '', service: '', message: '', company: '' });
+    } catch (err) {
+      setSubmitStatus('ERROR');
+      setSubmitError(err.message || 'Failed to send. Please email directly.');
+    }
   };
 
   return (
-    <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
+    <main className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
       {/* Navigation Header */}
       <nav className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
         <div className="text-xl font-extrabold tracking-tighter uppercase font-sans">
@@ -166,7 +170,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black">
+      <section id="hero" className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black">
         {/* Availability Badge */}
         <div className="z-10 self-start mt-6">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[10px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
@@ -178,7 +182,14 @@ export default function Home() {
         {/* Center Portrait */}
         <div className="absolute inset-0 flex items-center justify-center z-0">
           <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-dark-green relative border border-dark-green-tint-1 overflow-hidden">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 mix-blend-luminosity" style={{ backgroundImage: "url('/brian_portrait.png')" }}></div>
+            <Image
+              src="/brian_portrait.png"
+              alt="Portrait of Brian Mukwe Waliaula"
+              fill
+              priority
+              sizes="(min-width: 768px) 45vw, 85vw"
+              className="object-cover opacity-80 mix-blend-luminosity"
+            />
             <div className="absolute bottom-6 left-6 text-white text-[10px] tracking-widest uppercase font-semibold">
               [ BRIAN MUKWE WALIAULA • NAIROBI, KENYA ]
             </div>
@@ -303,12 +314,15 @@ export default function Home() {
                   
                   <div className="w-full h-48 my-6 relative overflow-hidden bg-black border border-dark-green-tint-1">
                     {proj.screenshot ? (
-                      <div 
-                        className="w-full h-full bg-cover bg-top opacity-90 hover:opacity-100 transition-opacity duration-300"
-                        style={{ backgroundImage: `url('${proj.screenshot}')` }}
-                      ></div>
+                      <Image
+                        src={proj.screenshot}
+                        alt={`Screenshot of ${proj.title}`}
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover object-top opacity-90 hover:opacity-100 transition-opacity duration-300"
+                      />
                     ) : (
-                      <HelmetCanvas scrollProgress={scrollProgress} styleName={proj.canvasStyle} />
+                      <HelmetCanvas styleName={proj.canvasStyle} />
                     )}
                   </div>
 
@@ -381,10 +395,15 @@ export default function Home() {
             
             <div className="border-t border-dark-green-tint-1 pt-6 flex flex-col gap-4">
               <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ VERIFIABLE CREDENTIALS ]</span>
-              <div 
-                className="w-full h-48 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-                style={{ backgroundImage: "url('/certificates_grid.png')" }}
-              ></div>
+              <div className="w-full h-48 relative border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+                <Image
+                  src="/certificates_grid.png"
+                  alt="Grid of professional certificates"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
 
@@ -406,10 +425,15 @@ export default function Home() {
               ))}
             </div>
 
-            <div 
-              className="w-full h-40 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-              style={{ backgroundImage: "url('/anthropic_certificates.png')" }}
-            ></div>
+            <div className="w-full h-40 relative border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+              <Image
+                src="/anthropic_certificates.png"
+                alt="Anthropic certification badges"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -438,7 +462,19 @@ export default function Home() {
           {/* Inquiry Form */}
           <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 bg-black/40 border border-dark-green-tint-1 p-6">
             <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ INQUIRY FORM ]</span>
-            
+
+            {/* Honeypot — hidden from real users, catches naive bots */}
+            <input
+              type="text"
+              name="company"
+              value={contactForm.company}
+              onChange={handleInputChange}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="hidden"
+            />
+
             <div className="flex flex-col gap-1">
               <label htmlFor="name" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Name</label>
               <input 
@@ -495,15 +531,19 @@ export default function Home() {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="bg-lime text-black py-3 font-bold uppercase tracking-wider text-xs border border-lime hover:bg-transparent hover:text-lime transition-all duration-300"
+            <button
+              type="submit"
+              disabled={submitStatus === 'SENDING'}
+              className="bg-lime text-black py-3 font-bold uppercase tracking-wider text-xs border border-lime hover:bg-transparent hover:text-lime transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              SEND INQUIRY
+              {submitStatus === 'SENDING' ? 'SENDING...' : 'SEND INQUIRY'}
             </button>
 
             {submitStatus === 'SUCCESS' && (
-              <span className="text-xs text-lime uppercase font-bold text-center mt-2">[ INQUIRY RECEIVED SUCCESSFUL ]</span>
+              <span role="status" className="text-xs text-lime uppercase font-bold text-center mt-2">[ INQUIRY RECEIVED SUCCESSFULLY ]</span>
+            )}
+            {submitStatus === 'ERROR' && (
+              <span role="alert" className="text-xs text-orange uppercase font-bold text-center mt-2">[ {submitError} ]</span>
             )}
           </form>
         </div>
@@ -531,9 +571,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">LEGAL</span>
-              <a href="#privacy" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
-              <a href="#terms" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ TERMS &amp; CONDITIONS ]</a>
+              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">REACH OUT</span>
+              <a href="mailto:brianmukwe097@gmail.com" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ EMAIL ]</a>
+              <a href="#contact" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ CONTACT FORM ]</a>
             </div>
           </div>
 

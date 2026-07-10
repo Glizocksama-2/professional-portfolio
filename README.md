@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Brian Mukwe Waliaula — Portfolio
 
-## Getting Started
+Single-page developer portfolio built with **Next.js 16**, **React 19**, **Tailwind CSS v4**, **React Three Fiber** (procedural 3D project art), and **GSAP** (marquee).
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Contact form
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The form posts to `app/api/contact/route.js`, which sends email via [Resend](https://resend.com). Without a key, inquiries are logged to the server console instead of emailed.
 
-## Learn More
+Environment variables (create `.env.local`):
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Purpose |
+| --- | --- |
+| `RESEND_API_KEY` | Enables email delivery (optional in dev) |
+| `CONTACT_TO_EMAIL` | Recipient override (defaults to brianmukwe097@gmail.com) |
+| `CONTACT_FROM_EMAIL` | Sender header (defaults to Resend onboarding sender) |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for Open Graph metadata |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Spam protection: hidden honeypot field + 3-requests-per-minute per-IP rate limit.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
+- `app/page.js` — the whole page (hero, services, projects, tech stack, credentials, contact)
+- `app/api/contact/route.js` — contact form endpoint
+- `components/HelmetCanvas.jsx` — procedural 3D helmet, per-project material styles, mounts only while in view
+- `components/Marquee.jsx` — infinite tech marquee (respects `prefers-reduced-motion`)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build && npm start
+```
