@@ -23,9 +23,6 @@ import ThemeToggle from '@/components/ThemeToggle';
 import MagneticButton from '@/components/MagneticButton';
 import NairobiClock from '@/components/NairobiClock';
 import Terminal from '@/components/Terminal';
-import WorkingScene from '@/components/WorkingScene';
-import TypedText from '@/components/TypedText';
-import AnimatedHeading from '@/components/AnimatedHeading';
 import { bio, services, projects, techStacks, testimonials, education, certifications } from '@/lib/content';
 
 export default function Home() {
@@ -120,13 +117,8 @@ export default function Home() {
             <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase">
               BRIAN<br />MUKWE<span className="text-accent">.</span>
             </h1>
-            <p className="text-sm font-bold text-muted tracking-wide uppercase mt-4 min-h-[1.5em]">
-              <TypedText phrases={[
-                'Full-Stack Developer & Freelancer',
-                'Payment Integrations · M-Pesa / Pesapal',
-                'Automation & AI Pipelines',
-                'Systems That Ship',
-              ]} />
+            <p className="text-sm font-bold text-muted tracking-wide uppercase mt-4">
+              Full-Stack Developer &amp; Freelancer
             </p>
           </div>
 
@@ -163,18 +155,11 @@ export default function Home() {
 
       {/* About Section */}
       <section id="about" className="px-8 py-24 bg-surface-2 border-y border-line relative overflow-hidden">
-        <div className="max-w-5xl mx-auto flex flex-col gap-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-10 items-center">
-            <div className="flex flex-col gap-6">
-              <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ PERSONAL SUMMARY ]</span>
-              <p className="text-lg md:text-2xl font-sans leading-relaxed">
-                {bio.summary}
-              </p>
-            </div>
-            <div className="border border-line bg-surface/40 p-4 max-w-sm w-full mx-auto md:mx-0">
-              <WorkingScene variant="coder" />
-            </div>
-          </div>
+        <div className="max-w-4xl mx-auto flex flex-col gap-6 relative z-10">
+          <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ PERSONAL SUMMARY ]</span>
+          <p className="text-lg md:text-2xl font-sans leading-relaxed">
+            {bio.summary}
+          </p>
 
           <span className="text-[10px] tracking-widest text-accent uppercase font-bold mt-8">[ WORKING STYLE ]</span>
           <blockquote className="font-brier text-muted text-2xl md:text-4xl leading-tight">
@@ -200,7 +185,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-            <AnimatedHeading text="13 Service Areas" className="text-4xl font-extrabold uppercase" />
+            <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
           </div>
 
           {/* Asymmetric Bento Grid */}
@@ -231,7 +216,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <AnimatedHeading text="8 Real Projects" className="text-4xl font-extrabold uppercase" />
+            <h2 className="text-4xl font-extrabold uppercase">8 Real Projects</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -320,7 +305,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ INTERACTIVE SHELL ]</span>
-            <AnimatedHeading text="Talk to the machine" className="text-4xl font-extrabold uppercase" />
+            <h2 className="text-4xl font-extrabold uppercase">Talk to the machine</h2>
             <p className="text-sm text-muted">Type <span className="text-accent font-mono">help</span> to explore, or go straight for <span className="text-accent font-mono">sudo hire brian</span>.</p>
           </div>
           <Terminal />
@@ -335,7 +320,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-2">
             <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ CLIENT WORDS ]</span>
-            <AnimatedHeading text="Testimonials" mode="letter" className="text-4xl font-extrabold uppercase" />
+            <h2 className="text-4xl font-extrabold uppercase">Testimonials</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
@@ -413,7 +398,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6">
             <span className="text-[10px] tracking-widest text-accent uppercase font-bold">[ CONTACT DETAILS ]</span>
-            <AnimatedHeading text="GET IN TOUCH" mode="letter" className="text-3xl font-extrabold uppercase" />
+            <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
             <p className="text-sm text-muted leading-relaxed">
               If you have a project requiring payment integration, system automation, or dynamic React deployment pipelines, submit the form or reach out directly.
             </p>
@@ -421,9 +406,6 @@ export default function Home() {
               <span>Email: {bio.email}</span>
               <span>Phone: {bio.phone}</span>
               <span>Location: {bio.location} — GMT+3</span>
-            </div>
-            <div className="border border-line bg-surface/40 p-4 mt-4 hidden md:block">
-              <WorkingScene variant="ops" />
             </div>
           </div>
 
@@ -520,11 +502,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-line py-16 px-8">
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <AnimatedHeading
-            text="ALWAYS BRINGING THE FIGHT."
-            stagger={0.12}
-            className="text-4xl md:text-7xl font-extrabold uppercase tracking-tighter text-accent text-center border-b border-line pb-12"
-          />
+          <h2 className="text-4xl md:text-7xl font-extrabold uppercase tracking-tighter text-accent text-center border-b border-line pb-12">
+            ALWAYS BRINGING THE FIGHT.
+          </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             <div className="flex flex-col gap-2">
