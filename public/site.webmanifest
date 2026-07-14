@@ -1,0 +1,16 @@
+{
+  "name": "Brian Mukwe Waliaula | Portfolio",
+  "short_name": "Brian Mukwe",
+  "description": "Full-Stack Developer & Telemetry Engineer Portfolio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111112",
+  "theme_color": "#d2ff00",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

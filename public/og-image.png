@@ -1,0 +1,6 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#111112"/>
+  <text x="50%" y="45%" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="#d2ff00" text-anchor="middle">Brian Mukwe Waliaula</text>
+  <text x="50%" y="55%" font-family="system-ui, sans-serif" font-size="24" fill="#b4b8a5" text-anchor="middle">Full-Stack Developer & Telemetry Engineer</text>
+  <text x="50%" y="70%" font-family="system-ui, sans-serif" font-size="18" fill="#535450" text-anchor="middle">Nairobi, Kenya — GMT+3</text>
+</svg>

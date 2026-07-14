@@ -1,126 +1,302 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import gsap from 'gsap';
 import Marquee from '@/components/Marquee';
+import PhotoReveal from '@/components/PhotoReveal';
+import { CrowdCanvas } from '@/components/v1/skiper39';
+import { TextRoll } from '@/components/v1/skiper58';
+import ThreeDHoverGallery from '@/components/lightswind/3d-hover-gallery';
+import { PortfolioStatAnimator } from '@/components/v1/skiper37';
 
-// Lazy-load R3F components below the fold for performance
-const HelmetCanvas = dynamic(() => import('@/components/HelmetCanvas'), {
+/**
+ * Lightweight scheduler for deferring non-critical work until browser is idle
+ * Falls back to setTimeout for browsers without requestIdleCallback
+ */
+function scheduleIdleWork(callback, timeout = 2000) {
+  if (typeof window === 'undefined') return;
+  
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(callback, { timeout });
+  } else {
+    setTimeout(callback, Math.min(timeout, 100));
+  }
+}
+
+/**
+ * Deferred GSAP + ScrollTrigger + Lenis initialization
+ * Only runs after browser is idle and hydration is complete
+ */
+function useDeferredAnimationSetup() {
+  const [isReady, setIsReady] = useState(false);
+  const ctxRef = useRef(null);
+  const lenisRef = useRef(null);
+
+  useEffect(() => {
+    // Phase 1: Wait for hydration to complete
+    const initAnimations = () => {
+      // Dynamically import heavy modules only when needed
+      import('gsap').then((gsap) => {
+        import('gsap/ScrollTrigger').then((ScrollTriggerModule) => {
+          import('lenis').then((lenisModule) => {
+            const gsapLib = gsap.default;
+            const ScrollTrigger = ScrollTriggerModule.ScrollTrigger;
+            const Lenis = lenisModule.default;
+
+            // Register plugins
+            gsapLib.registerPlugin(ScrollTrigger);
+
+            // Initialize Lenis with minimal config
+            const lenis = new Lenis({
+              duration: 1.2,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+              smoothWheel: true,
+              wheelMultiplier: 1,
+              touchMultiplier: 2,
+            });
+            lenisRef.current = lenis;
+
+            // RAF loop for Lenis - only runs when needed
+            let rafId;
+            function raf(time) {
+              lenis.raf(time);
+              rafId = requestAnimationFrame(raf);
+            }
+            rafId = requestAnimationFrame(raf);
+
+            // Initialize GSAP ScrollTrigger animations
+            const ctx = gsapLib.context(() => {
+              // 1. Cinematic Stagger Reveal for all sections
+              gsapLib.utils.toArray('.stagger-reveal').forEach((section) => {
+                gsapLib.fromTo(section.querySelectorAll('.reveal-child'), 
+                  { y: 50, opacity: 0 },
+                  { 
+                    y: 0, 
+                    opacity: 1, 
+                    duration: 1.0, 
+                    stagger: 0.15,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                      trigger: section,
+                      start: 'top 85%',
+                      toggleActions: 'play none none reverse'
+                    }
+                  }
+                );
+              });
+
+              // 2. Global Scroll progress updates
+              ScrollTrigger.create({
+                start: 'top top',
+                end: 'bottom bottom',
+                onUpdate: (self) => {
+                  // Throttle scroll progress updates
+                  if (self.progress !== ctxRef.current?.lastProgress) {
+                    // Use a ref to avoid stale closures
+                    window.dispatchEvent(new CustomEvent('scroll-progress', { 
+                      detail: self.progress 
+                    }));
+                  }
+                }
+              });
+            });
+
+            ctxRef.current = { ctx, lenis, rafId };
+            setIsReady(true);
+
+          });
+        });
+      });
+    };
+
+    // Schedule initialization after browser is idle
+    const idleHandle = scheduleIdleWork(initAnimations, 3000);
+
+    return () => {
+      if (idleHandle) cancelIdleCallback?.(idleHandle);
+      if (ctxRef.current) {
+        ctxRef.current.ctx.revert();
+        if (ctxRef.current.rafId) cancelAnimationFrame(ctxRef.current.rafId);
+        ctxRef.current.lenis?.destroy();
+      }
+    };
+  }, []);
+
+  return { isReady };
+}
+
+// Register GSAP ScrollTrigger (client-side only)
+if (typeof window !== 'undefined') {
+  // Only register - don't initialize yet
+  import('gsap').then(gsap => {
+    import('gsap/ScrollTrigger').then(mod => {
+      gsap.default.registerPlugin(mod.ScrollTrigger);
+    });
+  });
+}
+
+// Lazy load 3D components
+const HeroCenterpiece = dynamic(() => import('@/components/HeroCenterpiece'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[250px] flex items-center justify-center bg-dark-green-tint-1 animate-pulse">
-      <div className="text-lime text-[10px] tracking-widest uppercase">LOADING 3D SYSTEM...</div>
+    <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-black">
+      <div className="text-lime text-[10px] tracking-widest uppercase font-mono animate-pulse">
+        [ SYSTEM BOOTING... ]
+      </div>
+    </div>
+  )
+});
+
+const ProjectsSlider3D = dynamic(() => import('@/components/ProjectsSlider3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-black">
+      <div className="text-lime text-[10px] tracking-widest uppercase font-mono animate-pulse">
+        [ CALCULATING 3D CODES... ]
+      </div>
     </div>
   )
 });
 
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollProgressRef = useRef(0);
+  const scrollProgressRafRef = useRef(null);
+  const [activeServiceTab, setActiveServiceTab] = useState('all');
+  const [certPage, setCertPage] = useState(0);
   const [contactForm, setContactForm] = useState({ name: '', email: '', service: '', message: '' });
   const [submitStatus, setSubmitStatus] = useState('');
-  const mainRef = useRef();
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Deferred animation setup
+  const { isReady } = useDeferredAnimationSetup();
 
+  // Throttled scroll progress handler using ref + rAF
   useEffect(() => {
-    const handleScroll = () => {
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? window.scrollY / docHeight : 0;
-      setScrollProgress(progress);
+    let rafId;
+    
+    const handleScrollProgress = (e) => {
+      scrollProgressRef.current = e.detail;
+      
+      if (scrollProgressRafRef.current === null) {
+        scrollProgressRafRef.current = requestAnimationFrame(() => {
+          setScrollProgress(scrollProgressRef.current);
+          scrollProgressRafRef.current = null;
+        });
+      }
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    window.addEventListener('scroll-progress', handleScrollProgress);
+    
+    return () => {
+      window.removeEventListener('scroll-progress', handleScrollProgress);
+      if (scrollProgressRafRef.current !== null) {
+        cancelAnimationFrame(scrollProgressRafRef.current);
+        scrollProgressRafRef.current = null;
+      }
+    };
   }, []);
 
   const services = [
-    { title: 'Web Design', desc: 'Custom, premium typography and aesthetic grid structures.' },
-    { title: 'Frontend', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
-    { title: 'Backend', desc: 'Robust server routing, API logic, and scalable architectures.' },
-    { title: 'Full-Stack Development', desc: 'End-to-end web deployment linking databases and client clients.' },
-    { title: 'Systems Architecture', desc: 'Secure database setups, DNS config, and reverse proxies.' },
-    { title: 'Landing Pages', desc: 'Highly optimized page-speed configurations and layouts.' },
-    { title: 'Payment Gateway', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
-    { title: 'SEO', desc: 'Structuring search indexing parameters and core vitals audits.' },
-    { title: 'Security', desc: 'Supabase Row-Level Security rules and user authorization setups.' },
-    { title: 'AI Automations', desc: 'Timed scrapers, Groq/Claude integrations, and telegram alerts.' },
-    { title: 'Prompt Engineering', desc: 'Optimizing context structures and workflow system parameters.' },
-    { title: 'Consultancy', desc: 'Technical guidance, infrastructure debugging, and design scoping.' },
-    { title: 'AI Learning & Training', desc: 'Guiding organizations on AI integration and agent skills.' }
+    { title: 'Web Design', category: 'design', desc: 'Custom, premium typography and aesthetic grid structures.' },
+    { title: 'Frontend', category: 'design', desc: 'Vibrant, high-performance React layouts with fluid animations.' },
+    { title: 'Backend', category: 'systems', desc: 'Robust server routing, API logic, and scalable architectures.' },
+    { title: 'Full-Stack Development', category: 'systems', desc: 'End-to-end web deployment linking databases and clients.' },
+    { title: 'Systems Architecture', category: 'systems', desc: 'Secure database setups, DNS config, and reverse proxies.' },
+    { title: 'Landing Pages', category: 'design', desc: 'Highly optimized page-speed configurations and layouts.' },
+    { title: 'Payment Gateway', category: 'systems', desc: 'Integration of East African gateways (Pesapal, M-Pesa, Instasend).' },
+    { title: 'SEO', category: 'design', desc: 'Structuring search indexing parameters and core vitals audits.' },
+    { title: 'Security', category: 'systems', desc: 'Supabase Row-Level Security rules and user authorization setups.' },
+    { title: 'AI Automations', category: 'ai', desc: 'Timed scrapers, Groq/Claude integrations, and telegram alerts.' },
+    { title: 'Prompt Engineering', category: 'ai', desc: 'Optimizing context structures and workflow system parameters.' },
+    { title: 'Consultancy', category: 'ai', desc: 'Technical guidance, infrastructure debugging, and design scoping.' },
+    { title: 'AI Learning & Training', category: 'ai', desc: 'Guiding organizations on AI integration and agent skills.' }
   ];
 
   const projects = [
     {
       num: '01',
       title: 'Fareast Ventures',
-      role: 'Systems Developer',
-      desc: 'Premium Nairobi chauffeur platform featuring automated booking pipelines, real-time emails, Instasend payments routing, and comprehensive SEO performance tuning.',
-      tags: ['React', 'Tailwind CSS', 'Instasend', 'SEO Audit'],
-      github: 'https://github.com/Glizocksama-2/far-east-ventures',
+      role: 'Full-Stack Developer',
+      desc: 'Corporate land investment portfolio portal for a firm based in Nakuru. Fully managed static deployment displaying real-time mapping details and land query processing.',
+      tags: ['React', 'Next.js', 'Tailwind CSS', 'Vercel Deployment'],
+      github: 'https://github.com/Glizocksama-2/fareast-ventures',
       screenshot: '/fareast_screenshot.png'
     },
     {
       num: '02',
-      title: 'Saka Wera',
-      role: 'Workflow Automator',
-      desc: 'Automated job application matching engine powered by n8n. Scrapes major local boards, processes relevancy with Groq LLM filters, and fires alerts to Telegram.',
-      tags: ['n8n', 'Groq AI', 'Telegram API', 'Automation'],
-      github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Chrome Gold'
-    },
-    {
-      num: '03',
-      title: 'Shamba Command Center',
+      title: 'Shamba Command',
       role: 'Full-Stack Developer',
       desc: 'Dual-frontend farm records and inventory command database, comprising a React/Vite dashboard and a Flutter Android app featuring local Google ML Kit text OCR.',
       tags: ['React', 'Flutter', 'Firebase', 'Google ML Kit'],
       github: 'https://github.com/Glizocksama-2/birunda-farm',
-      screenshot: '/invoice_generator.jpg'
+      screenshot: '/shamba_command.png'
+    },
+    {
+      num: '03',
+      title: 'Gorosei Estates',
+      role: 'Full-Stack Developer',
+      desc: 'Property management platform for real estate operations in Kenya. Integrated Supabase Auth with Row-Level Security, Firebase sync for offline-first Flutter mobile app, and web admin console.',
+      tags: ['React', 'Flutter', 'Supabase Auth', 'Row-Level Security', 'Firebase'],
+      github: 'https://github.com/Glizocksama-2/fareast-ventures',
+      screenshot: '/gorosei_estates.png'
     },
     {
       num: '04',
-      title: 'GOROSEI',
-      role: 'Full-Stack Developer',
-      desc: 'Streetwear e-commerce storefront. Replaced hardcoded authorization parameters with secure Supabase Auth and strict Row-Level Security database controls.',
-      tags: ['React', 'Supabase Auth', 'Row-Level Security', 'UX Design'],
-      github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Matte Black'
-    },
-    {
-      num: '05',
       title: 'LifeRPG',
       role: 'Developer',
       desc: 'Single-file gamified habit tracker PWA with SVG avatar layering, mood logs, and an AI coach proxy routing keys via Netlify serverless functions.',
       tags: ['React PWA', 'Netlify Functions', 'Groq API', 'Local Storage'],
       github: 'https://github.com/Glizocksama-2/rpgstats',
-      canvasStyle: 'Glassmorphism'
+      screenshot: '/liferpg_screenshot.png'
     },
     {
-      num: '06',
-      title: 'Megatron',
-      role: 'Developer',
-      desc: 'Personal AI Chief of Staff agent scraping daily developer trends, conducting system health tests every 30 minutes, and alerting via Telegram channels.',
-      tags: ['n8n', 'Telegram Alerts', 'Render Hosting', 'System Scraper'],
-      github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Industrial Red'
-    },
-    {
-      num: '07',
-      title: 'Water & Sanitation NPO',
+      num: '05',
+      title: 'H2ORG',
       role: 'Full-Stack Developer',
       desc: 'Six-page donor coordination hub accepting international USD cards settled to local banks via Pesapal API, with automated Resend transactional alerts.',
       tags: ['HTML/CSS', 'Pesapal API', 'Resend', 'AI Help Widget'],
-      github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Fluid Aqua'
+      github: 'https://github.com/Glizocksama-2/fareast-ventures',
+      screenshot: '/h2org_dashboard.png'
     },
     {
-      num: '08',
-      title: 'EStarz FC',
+      num: '06',
+      title: 'Homestarz FC',
       role: 'Mobile Developer',
       desc: 'Android application for sports club tracking, integrating user registrations, validation, and structured WhatsApp sales pipelines.',
       tags: ['Kotlin', 'Material Design', 'Android SDK', 'Input Validation'],
-      github: 'https://github.com/Glizocksama-2',
-      canvasStyle: 'Sport Royal'
+      github: 'https://github.com/Glizocksama-2/fareast-ventures',
+      screenshot: '/threadlite_recording.png'
+    },
+    {
+      num: '07',
+      title: 'Northwatch',
+      role: 'Full-Stack Developer',
+      desc: 'Secure authentication portal for personal ledger command deck. Supabase Auth with email/password and magic link authentication, session management, and role-based access control for isolated command environments.',
+      tags: ['React', 'Supabase Auth', 'Session Management', 'RBAC'],
+      github: 'https://github.com/Glizocksama-2/fareast-ventures',
+      screenshot: '/northwatch_login.png'
+    },
+    {
+      num: '08',
+      title: 'KTI',
+      role: 'Systems Developer',
+      desc: 'Interactive tax advisory and compliance intelligence dashboard. Integrates real-time KRA calculators, PAYE/VAT trackers, and a virtual compliance chatbot assisting local businesses.',
+      tags: ['React', 'KRA Rules', 'AI Assistant', 'Tax Analytics'],
+      github: 'https://github.com/Glizocksama-2/kenyan-tax-intelligence',
+      screenshot: '/kenyan_tax_intelligence.png'
     }
+  ];
+
+  const certifications = [
+    'Claude 101', 'Claude Code 101', 'Claude Platform 101', 'Introduction to Claude Cowork', 
+    'Claude Code in Action', 'AI Fluency: Framework and Foundations', 'Building with Claude API', 
+    'Introduction to Model Context Protocol', 'AI Fluency for Educators', 'AI Fluency for Students', 
+    'Model Context Protocol: Advanced Topics', 'Claude with Amazon Bedrock', 'Claude with Google Cloud Vertex AI', 
+    'Teaching AI Fluency', 'AI Fluency for Non Profits', 'Introduction to Agent Skills', 
+    'Introduction to Subagents', 'AI Capabilities and Limitations', 'AI Fluency for Small Businesses', 
+    'AI Fluency for Builders'
   ];
 
   const techStacks = [
@@ -132,225 +308,224 @@ export default function Home() {
     { group: 'Payments', items: ['Pesapal Routing', 'Instasend API', 'M-Pesa Integrations'] }
   ];
 
+  // Filtering logic for Services
+  const filteredServices = activeServiceTab === 'all' 
+    ? services 
+    : services.filter(s => s.category === activeServiceTab);
+
+  // Pagination logic for Certifications (6 per page)
+  const certsPerPage = 6;
+  const totalCertPages = Math.ceil(certifications.length / certsPerPage);
+  const paginatedCerts = certifications.slice(certPage * certsPerPage, (certPage + 1) * certsPerPage);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setContactForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setSubmitStatus('SUCCESS');
-    setContactForm({ name: '', email: '', service: '', message: '' });
+    setSubmitError('');
+    setSubmitStatus('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      setSubmitStatus('SUCCESSFULLY SENT');
+      setContactForm({ name: '', email: '', service: '', message: '' });
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setSubmitStatus(''), 5000);
+    } catch (error) {
+      setSubmitError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <main ref={mainRef} className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-8 py-4 flex justify-between items-center">
-        <div className="text-xl font-extrabold tracking-tighter uppercase font-sans">
-          BRIAN MUKWE<span className="text-lime">.</span>
+    <>      <main className="w-full bg-black min-h-screen text-white overflow-x-hidden selection:bg-lime selection:text-black relative">
+      
+        {/* Global 3D ShaderGradient Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none w-screen h-screen">
+          <HeroCenterpiece />
         </div>
-        <div className="hidden md:flex gap-8 text-[11px] tracking-widest uppercase font-bold text-green-off-white-2">
-          <a href="#about" className="hover:text-lime transition-colors">ABOUT</a>
-          <a href="#services" className="hover:text-lime transition-colors">SERVICES</a>
-          <a href="#projects" className="hover:text-lime transition-colors">PROJECTS</a>
-          <a href="#tech" className="hover:text-lime transition-colors">TECH STACK</a>
-          <a href="#credentials" className="hover:text-lime transition-colors">CREDENTIALS</a>
+    
+      {/* Sticky Navigation */}
+      <nav className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-dark-green-tint-1 z-40 px-4 py-3 flex justify-between items-center">
+        <a href="/" className="flex items-center gap-2" aria-label="Home">
+          <img src="/logo.svg" alt="" className="w-8 h-8 drop-filter" style={{ filter: 'drop-shadow(0 0 8px #a3ff00)' }} />
+          <span className="text-lg font-extrabold tracking-tighter uppercase font-sans hidden sm:block">
+            BRIAN MUKWE<span className="text-lime">.</span>
+          </span>
+        </a>
+        <div className="hidden md:flex gap-6 text-[10px] tracking-widest uppercase font-bold text-green-off-white-2">
+          <a href="#about" className="hover:text-lime transition-colors"><TextRoll>ABOUT</TextRoll></a>
+          <a href="#services" className="hover:text-lime transition-colors"><TextRoll>SERVICES</TextRoll></a>
+          <a href="#projects" className="hover:text-lime transition-colors"><TextRoll>PROJECTS</TextRoll></a>
+          <a href="#tech" className="hover:text-lime transition-colors"><TextRoll>TECH</TextRoll></a>
+          <a href="#credentials" className="hover:text-lime transition-colors"><TextRoll>CREDENTIALS</TextRoll></a>
         </div>
         <a 
           href="#contact" 
-          className="bg-lime text-black px-6 py-2 font-bold uppercase tracking-wider text-[10px] hover:bg-transparent hover:text-lime border border-lime transition-all duration-300"
+          className="bg-lime text-black px-4 py-2 font-bold uppercase tracking-wider text-[10px] hover:bg-transparent hover:text-lime border border-lime transition-all duration-300 whitespace-nowrap"
         >
           HIRE ME
         </a>
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col justify-between p-8 relative overflow-hidden bg-black">
-        {/* Availability Badge */}
-        <div className="z-10 self-start mt-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[10px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
+      <section className="min-h-screen flex flex-col justify-between p-4 md:p-8 relative overflow-hidden bg-black z-10 stagger-reveal">
+        <div className="z-10 self-start mt-4 reveal-child">
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-dark-green text-[8px] md:text-[9px] text-lime font-bold tracking-widest uppercase border border-dark-green-tint-1">
             <span className="w-1.5 h-1.5 bg-lime rounded-full animate-ping"></span>
-            AVAILABLE FOR FREELANCE PROJECTS
+            AVAILABLE FOR CONTRACTS
           </span>
         </div>
 
-        {/* Center Portrait */}
-        <div className="absolute inset-0 flex items-center justify-center z-0">
-          <div className="w-[85vw] md:w-[45vw] h-[70vh] bg-dark-green relative border border-dark-green-tint-1 overflow-hidden">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80 mix-blend-luminosity" style={{ backgroundImage: "url('/brian_portrait.png')" }}></div>
-            <div className="absolute bottom-6 left-6 text-white text-[10px] tracking-widest uppercase font-semibold">
-              [ BRIAN MUKWE WALIAULA • NAIROBI, KENYA ]
-            </div>
-          </div>
+        {/* Animated Crowd Canvas */}
+        <div className="absolute inset-0 w-full h-[95vh] z-0 pointer-events-none">
+          <CrowdCanvas src="/images/peeps/all-peeps.png" rows={15} cols={7} />
         </div>
 
-        {/* Title Grid */}
-        <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-8 pt-24">
+        <div className="z-10 flex flex-col md:flex-row justify-between items-end w-full mt-auto gap-6 md:gap-8 pt-16 md:pt-24 pb-8 reveal-child">
           <div className="flex flex-col">
-            <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-none uppercase">
-              BRIAN<br />MUKWE<span className="text-lime">.</span>
+            <h1 className="text-4xl md:text-6xl lg:text-9xl font-black tracking-tighter leading-none uppercase">
+              <TextRoll>BRIAN</TextRoll>
+              <TextRoll>MUKWE.</TextRoll>
             </h1>
-            <p className="text-sm font-bold text-green-off-white-2 tracking-wide uppercase mt-4">
-              Full-Stack Developer &amp; Freelancer
+            <p className="text-[9px] md:text-xs font-bold text-green-off-white-2 tracking-widest uppercase mt-3 md:mt-4">
+              FULL-STACK DEVELOPER & TELEMETRY ENGINEER
             </p>
           </div>
 
-          {/* Stats Widget */}
-          <div className="grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full">
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">8+</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
+          {/* Key Indicators */}
+          <div className="grid grid-cols-3 gap-4 md:gap-8 bg-black/85 border border-dark-green-tint-1 p-4 md:p-6 md:max-w-sm w-full">
+            <div className="flex flex-col items-center text-center">
+              <PortfolioStatAnimator value={10} />
+              <span className="text-[7px] md:text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPS</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">13</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
+            <div className="flex flex-col items-center text-center">
+              <PortfolioStatAnimator value={13} />
+              <span className="text-[7px] md:text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-lime">20+</span>
-              <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">CERTS</span>
+            <div className="flex flex-col items-center text-center">
+              <PortfolioStatAnimator value={20} suffix="+" />
+              <span className="text-[7px] md:text-[8px] tracking-widest text-green-off-white-2 uppercase mt-1">CERTS</span>
             </div>
-          </div>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="z-10 flex gap-4 mt-8 pb-12">
-          <a href="#projects" className="bg-white text-black px-8 py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-lime hover:text-black border border-white hover:border-lime transition-all duration-300">
-            VIEW PROJECTS
-          </a>
-          <a href="#contact" className="border border-white text-white px-8 py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-white hover:text-black transition-all duration-300">
-            GET IN TOUCH
-          </a>
-        </div>
-      </section>
-
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
-      {/* About Section */}
-      <section id="about" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto flex flex-col gap-6 relative z-10">
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ PERSONAL SUMMARY ]</span>
-          <p className="text-lg md:text-2xl text-white font-sans leading-relaxed">
-            I build performant systems, automated scraper tools, e-commerce networks, and clean frontend UI configurations. From initial DNS routing parameters to final database security rule optimizations, I handle complete full-stack project cycles.
-          </p>
-
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold mt-8">[ WORKING STYLE ]</span>
-          <blockquote className="font-brier text-green-off-white-1 text-2xl md:text-4xl leading-tight">
-            "High performance is built on telemetry, structured routines, and precise specifications. Every pipeline must be monitored, and every database query optimized for speed."
-          </blockquote>
-
-          <div className="flex gap-6 mt-6 text-xs font-bold uppercase tracking-wider text-white">
-            <a href="mailto:brianmukwe097@gmail.com" className="hover:text-lime transition-colors">[ EMAIL ]</a>
-            <a href="tel:+254792300552" className="hover:text-lime transition-colors">[ CALL ]</a>
-            <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="hover:text-lime transition-colors">[ GITHUB ]</a>
           </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
+      {/* Cinematic Photo + Bio Section (replaces old About) */}
+      <section id="about" className="stagger-reveal">
+        <PhotoReveal />
+      </section>
 
       {/* Services Section */}
-      <section id="services" className="px-8 py-24 bg-black">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
+      <section id="services" className="px-4 md:px-8 py-12 md:py-20 bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 md:gap-8">
+          <div className="flex flex-col gap-2 reveal-child">
+            <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
+            <h2 className="text-2xl md:text-4xl font-extrabold uppercase flex"><TextRoll>13 SERVICE AREAS</TextRoll></h2>
           </div>
 
-          {/* Asymmetric Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.map((srv, idx) => (
-              <div 
-                key={idx} 
-                className={`border border-dark-green-tint-1 p-8 bg-dark-green/10 flex flex-col justify-between hover:border-lime transition-all duration-300 ${
-                  idx % 4 === 0 ? 'md:col-span-2' : ''
+          {/* Interactive Tabs */}
+          <div className="flex flex-wrap gap-2 md:gap-3 reveal-child">
+            {['all', 'design', 'systems', 'ai'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveServiceTab(tab)}
+                className={`px-4 md:px-5 py-1.5 md:py-2 text-[8px] md:text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 ${
+                  activeServiceTab === tab
+                    ? 'bg-lime text-black border-lime' 
+                    : 'bg-transparent text-white border-dark-green-tint-1 hover:border-lime'
                 }`}
               >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Filtered Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 reveal-child">
+            {filteredServices.map((srv, idx) => (
+              <div 
+                key={idx} 
+                className="border border-dark-green-tint-1 p-4 md:p-6 bg-dark-green/10 flex flex-col justify-between hover:border-lime transition-all duration-300"
+              >
                 <div>
-                  <span className="text-[10px] tracking-widest text-lime uppercase font-bold">AREA {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
-                  <h3 className="text-xl font-bold uppercase mt-2 text-white">{srv.title}</h3>
+                  <span className="text-[8px] md:text-[9px] tracking-widest text-lime uppercase font-bold font-mono">SPEC {idx + 1}</span>
+                  <h3 className="text-base md:text-lg font-bold uppercase mt-2 text-white">{srv.title}</h3>
                 </div>
-                <p className="text-sm text-green-off-white-2 mt-4 leading-relaxed">{srv.desc}</p>
+                <p className="text-[10px] md:text-xs text-green-off-white-2 mt-3 md:mt-4 leading-relaxed">{srv.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
-      {/* Projects Section */}
-      <section id="projects" className="px-8 py-24 bg-black border-t border-dark-green-tint-1">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
-            <h2 className="text-4xl font-extrabold uppercase">8 Real Projects</h2>
+      {/* Projects Section - 3D Slider */}
+      <section id="projects" className="px-4 md:px-8 py-12 md:py-20 bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 md:gap-8">
+          <div className="flex flex-col gap-2 reveal-child">
+            <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ COMPLETED SHIPS ]</span>
+            <h2 className="text-2xl md:text-4xl font-extrabold uppercase flex"><TextRoll>8 REAL PROJECTS</TextRoll></h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((proj, idx) => (
-              <div key={idx} className="border border-dark-green-tint-1 p-8 bg-dark-green/5 flex flex-col justify-between hover:border-lime transition-all duration-500">
-                <div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-3xl font-black text-lime">{proj.num}</span>
-                    <span className="text-[10px] tracking-widest text-green-off-white-2 uppercase font-bold">{proj.role}</span>
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold uppercase mt-4 text-white">{proj.title}</h3>
-                  
-                  <div className="w-full h-48 my-6 relative overflow-hidden bg-black border border-dark-green-tint-1">
-                    {proj.screenshot ? (
-                      <div 
-                        className="w-full h-full bg-cover bg-top opacity-90 hover:opacity-100 transition-opacity duration-300"
-                        style={{ backgroundImage: `url('${proj.screenshot}')` }}
-                      ></div>
-                    ) : (
-                      <HelmetCanvas scrollProgress={scrollProgress} styleName={proj.canvasStyle} />
-                    )}
-                  </div>
-
-                  <p className="text-sm text-green-off-white-2 leading-relaxed mt-2">{proj.desc}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mt-6">
-                    {proj.tags.map((t, i) => (
-                      <span key={i} className="text-[9px] tracking-wider uppercase bg-dark-green px-2.5 py-1 text-lime font-bold">{t}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-8 border-t border-dark-green-tint-1 pt-6 flex justify-end">
-                  <a 
-                    href={proj.github} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-xs font-bold uppercase tracking-widest text-lime hover:text-white transition-colors"
-                  >
-                    VIEW REPOSITORY →
-                  </a>
-                </div>
-              </div>
-            ))}
+          {/* High-Fidelity 3D Scroll Slider */}
+          <div className="reveal-child">
+            <ProjectsSlider3D projects={projects} />
           </div>
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
+      {/* Visual Stack Showcase */}
+      <section id="stack" className="px-4 md:px-8 py-12 md:py-20 bg-black/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-2 reveal-child">
+          <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ SYSTEM INTERFACE STACK ]</span>
+          <h2 className="text-2xl md:text-4xl font-extrabold uppercase flex"><TextRoll>PLATFORM VIEWPORTS</TextRoll></h2>
+          <p className="text-[10px] md:text-xs text-green-off-white-2 mt-2">
+            Cinematic stacking telemetry showing our primary live dashboards and custom portal screenshots.
+          </p>
+        </div>
+        <div className="mt-6 md:mt-8 reveal-child">
+          <ThreeDHoverGallery images={[
+            "/fareast_screenshot.png",
+            "/shamba_command.png",
+            "/gorosei_estates.png",
+            "/northwatch_login.png",
+            "/kenyan_tax_intelligence.png",
+            "/threadlite_recording.png",
+            "/h2org_dashboard.png"
+          ]} />
+        </div>
+      </section>
 
       {/* Tech Stack Section */}
-      <section id="tech" className="px-8 py-24 bg-dark-green border-y border-dark-green-tint-1">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ CURRENT TECH STACK ]</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section id="tech" className="px-4 md:px-8 py-12 md:py-20 bg-dark-green/60 backdrop-blur-md border-y border-dark-green-tint-1 stagger-reveal relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 md:gap-8">
+          <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold reveal-child">[ CURRENT SYSTEM TOOLS ]</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 reveal-child">
             {techStacks.map((stk, idx) => (
-              <div key={idx} className="border border-dark-green-tint-1 p-6 bg-black/30">
-                <h3 className="text-xs font-bold tracking-widest uppercase text-lime mb-4">{stk.group}</h3>
-                <div className="flex flex-wrap gap-2">
+              <div key={idx} className="border border-dark-green-tint-1 p-4 md:p-6 bg-black/40">
+                <h3 className="text-[9px] md:text-xs font-bold tracking-widest uppercase text-lime mb-3 md:mb-4">{stk.group}</h3>
+                <div className="flex flex-wrap gap-1.5 md:gap-2">
                   {stk.items.map((item, i) => (
-                    <span key={i} className="text-xs px-3 py-1.5 bg-black text-green-off-white-1 uppercase font-semibold">{item}</span>
+                    <span key={i} className="text-[9px] md:text-[11px] px-2.5 md:px-3 py-1 md:py-1.5 bg-black text-green-off-white-1 uppercase font-semibold flex items-center justify-center">
+                      <TextRoll>{item.toUpperCase()}</TextRoll>
+                    </span>
                   ))}
                 </div>
               </div>
@@ -359,88 +534,108 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 31.51vh Breathing Room */}
-      <div className="h-[31.51vh]"></div>
-
       {/* Credentials Section */}
-      <section id="credentials" className="px-8 py-24 bg-black">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
-          <div className="flex flex-col gap-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ ACADEMIC DEVELOPMENT ]</span>
+      <section id="credentials" className="px-4 md:px-8 py-12 md:py-20 bg-black/60 backdrop-blur-md stagger-reveal relative z-10">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+          <div className="flex flex-col gap-6 reveal-child">
+            <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ EDUCATION ]</span>
             <div>
-              <h3 className="text-2xl font-bold uppercase text-white">Daystar University</h3>
-              <p className="text-sm text-green-off-white-2 mt-2 leading-relaxed">
-                • Diploma in Human Resources<br />
-                • Certificate in Business Management (Graduated 2024)
+              <h3 className="text-lg md:text-xl font-bold uppercase text-white font-sans flex"><TextRoll>DAYSTAR UNIVERSITY</TextRoll></h3>
+              <p className="text-[10px] md:text-xs text-green-off-white-2 mt-2 leading-relaxed">
+                Diploma in Human Resources<br />
+                Certificate in Business Management (Graduated 2024)
               </p>
             </div>
             <div className="border-t border-dark-green-tint-1 pt-6">
-              <h3 className="text-2xl font-bold uppercase text-white">Upper Hill School</h3>
-              <p className="text-sm text-green-off-white-2 mt-2">Kenya Certificate of Secondary Education (KCSE)</p>
+              <h3 className="text-lg md:text-xl font-bold uppercase text-white font-sans flex"><TextRoll>UPPER HILL SCHOOL</TextRoll></h3>
+              <p className="text-[10px] md:text-xs text-green-off-white-2 mt-2">Kenya Certificate of Secondary Education (KCSE)</p>
             </div>
-            
             <div className="border-t border-dark-green-tint-1 pt-6 flex flex-col gap-4">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ VERIFIABLE CREDENTIALS ]</span>
-              <div 
-                className="w-full h-48 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-                style={{ backgroundImage: "url('/certificates_grid.png')" }}
-              ></div>
+              <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ OBSIDIAN GRAPH KNOWLEDGE BASE ]</span>
+              <div className="w-full h-48 md:h-72 relative border border-dark-green-tint-1 opacity-90 hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+                <Image
+                  src="/graph_view.png"
+                  alt="Obsidian Graph Knowledge Base visualization"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={false}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ ANTHROPIC CERTIFICATIONS (20+) ]</span>
-            <div className="h-80 overflow-y-auto border border-dark-green-tint-1 p-6 bg-dark-green/10 flex flex-col gap-2 mb-4">
-              {[
-                'Claude 101', 'Claude Code 101', 'Claude Platform 101', 'Introduction to Claude Cowork', 
-                'Claude Code in Action', 'AI Fluency: Framework and Foundations', 'Building with Claude API', 
-                'Introduction to Model Context Protocol', 'AI Fluency for Educators', 'AI Fluency for Students', 
-                'Model Context Protocol: Advanced Topics', 'Claude with Amazon Bedrock', 'Claude with Google Cloud Vertex AI', 
-                'Teaching AI Fluency', 'AI Fluency for Non Profits', 'Introduction to Agent Skills', 
-                'Introduction to Subagents', 'AI Capabilities and Limitations', 'AI Fluency for Small Businesses', 
-                'AI Fluency for Builders'
-              ].map((cert, idx) => (
-                <div key={idx} className="text-xs text-white uppercase font-bold border-b border-dark-green-tint-2/40 pb-2">
+          <div className="flex flex-col gap-4 reveal-child">
+            <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ CERTIFICATIONS (20+) ]</span>
+            {/* Paginated Certs List */}
+            <div className="border border-dark-green-tint-1 p-4 md:p-6 bg-dark-green/10 flex flex-col gap-2 md:gap-3 min-h-[240px] md:min-h-[280px]">
+              {paginatedCerts.map((cert, idx) => (
+                <div key={idx} className="text-[10px] md:text-[11px] text-white uppercase font-bold border-b border-dark-green-tint-2/40 pb-2">
                   [ {cert} ]
                 </div>
               ))}
             </div>
 
-            <div 
-              className="w-full h-40 bg-cover bg-center border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300"
-              style={{ backgroundImage: "url('/anthropic_certificates.png')" }}
-            ></div>
+            {/* Pagination Controls */}
+            <div className="flex gap-3 md:gap-4 items-center justify-end text-[9px] md:text-xs">
+              <button 
+                disabled={certPage === 0}
+                onClick={() => setCertPage(prev => Math.max(0, prev - 1))}
+                className="px-2.5 md:px-3 py-1 bg-black border border-dark-green-tint-1 text-white disabled:opacity-40"
+              >
+                PREV
+              </button>
+              <span className="font-mono text-lime">{certPage + 1} / {totalCertPages}</span>
+              <button 
+                disabled={certPage === totalCertPages - 1}
+                onClick={() => setCertPage(prev => Math.min(totalCertPages - 1, prev + 1))}
+                className="px-2.5 md:px-3 py-1 bg-black border border-dark-green-tint-1 text-white disabled:opacity-40"
+              >
+                NEXT
+              </button>
+            </div>
+
+            <div className="w-full h-32 md:h-40 relative border border-dark-green-tint-1 opacity-80 hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+                <Image
+                  src="/certificates_grid.png"
+                  alt="Certifications grid (20+ certifications)"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={false}
+                />
+              </div>
           </div>
         </div>
       </section>
 
       {/* Partners Marquee */}
-      <section className="py-12 bg-black border-t border-dark-green-tint-1">
+      <section className="py-8 bg-black border-t border-dark-green-tint-1">
         <Marquee textItems={['REACT', 'NEXT.JS', 'TAILWIND CSS', 'SUPABASE', 'DOCKER', 'N8N AUTOMATION', 'POSTGRESQL', 'FLUTTER']} />
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="px-8 py-24 bg-dark-green border-t border-dark-green-tint-1">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="flex flex-col gap-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ CONTACT DETAILS ]</span>
-            <h2 className="text-3xl font-extrabold uppercase">GET IN TOUCH</h2>
-            <p className="text-sm text-green-off-white-2 leading-relaxed">
-              If you have a project requiring payment integration, system automation, or dynamic React deployment pipelines, submit the form or reach out directly.
+      <section id="contact" className="px-4 md:px-8 py-12 md:py-20 bg-dark-green/60 backdrop-blur-md border-t border-dark-green-tint-1 stagger-reveal relative z-10">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+          <div className="flex flex-col gap-6 reveal-child">
+            <span className="text-[9px] md:text-[10px] tracking-widest text-lime uppercase font-bold">[ COMMUNICATION NODE ]</span>
+            <h2 className="text-2xl md:text-3xl font-extrabold uppercase flex"><TextRoll>GET IN TOUCH</TextRoll></h2>
+            <p className="text-[10px] md:text-xs text-green-off-white-2 leading-relaxed">
+              Submit the form or reach out directly for systems, automations, and frontend deployments.
             </p>
-            <div className="flex flex-col gap-2 text-xs font-bold uppercase text-white mt-4">
+            <div className="flex flex-col gap-2 text-[10px] md:text-xs font-bold uppercase text-white mt-4 font-mono">
               <span>Email: brianmukwe097@gmail.com</span>
               <span>Phone: +254 792 300 552</span>
-              <span>Location: Nairobi, Kenya — GMT+3</span>
+              <span>Location: Nairobi, Kenya -- GMT+3</span>
             </div>
           </div>
 
-          {/* Inquiry Form */}
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 bg-black/40 border border-dark-green-tint-1 p-6">
-            <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ INQUIRY FORM ]</span>
+          {/* Form */}
+          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 bg-black/40 border border-dark-green-tint-1 p-4 md:p-6 reveal-child">
+            <span className="text-[8px] md:text-[9px] tracking-widest text-lime uppercase font-bold font-mono">[ FORM.TRANSMISSION ]</span>
             
             <div className="flex flex-col gap-1">
-              <label htmlFor="name" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Name</label>
+              <label htmlFor="name" className="text-[7px] md:text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Name</label>
               <input 
                 id="name"
                 type="text" 
@@ -448,12 +643,12 @@ export default function Home() {
                 value={contactForm.name} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-3 md:px-4 py-2 text-[10px] md:text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="email" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Email</label>
+              <label htmlFor="email" className="text-[7px] md:text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Email</label>
               <input 
                 id="email"
                 type="email" 
@@ -461,19 +656,19 @@ export default function Home() {
                 value={contactForm.email} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-3 md:px-4 py-2 text-[10px] md:text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="service" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Service Required</label>
+              <label htmlFor="service" className="text-[7px] md:text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Service Required</label>
               <select 
                 id="service"
                 name="service" 
                 value={contactForm.service} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 px-4 py-2 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 px-3 md:px-4 py-2 text-[10px] md:text-xs text-white focus:border-lime focus:outline-none"
               >
                 <option value="">Select a service...</option>
                 {services.map((s, i) => (
@@ -483,7 +678,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="message" className="text-[9px] tracking-widest uppercase font-bold text-green-off-white-2">Message</label>
+              <label htmlFor="message" className="text-[7px] md:text-[8px] tracking-widest uppercase font-bold text-green-off-white-2">Message</label>
               <textarea 
                 id="message"
                 name="message" 
@@ -491,57 +686,61 @@ export default function Home() {
                 value={contactForm.message} 
                 onChange={handleInputChange} 
                 required 
-                className="bg-black border border-dark-green-tint-1 p-4 text-sm text-white focus:border-lime focus:outline-none"
+                className="bg-black border border-dark-green-tint-1 p-3 md:p-4 text-[10px] md:text-xs text-white focus:border-lime focus:outline-none"
               />
             </div>
 
             <button 
               type="submit" 
-              className="bg-lime text-black py-3 font-bold uppercase tracking-wider text-xs border border-lime hover:bg-transparent hover:text-lime transition-all duration-300"
+              disabled={isSubmitting}
+              className={`bg-lime text-black py-2.5 md:py-3 font-bold uppercase tracking-wider text-[9px] md:text-[10px] border border-lime hover:bg-transparent hover:text-lime transition-all duration-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              SEND INQUIRY
+              {isSubmitting ? 'TRANSMITTING...' : 'SEND INQUIRY'}
             </button>
 
-            {submitStatus === 'SUCCESS' && (
-              <span className="text-xs text-lime uppercase font-bold text-center mt-2">[ INQUIRY RECEIVED SUCCESSFUL ]</span>
+            {submitError && (
+              <span className="text-[10px] md:text-xs text-orange uppercase font-bold text-center mt-2 font-mono">[ ERROR: {submitError} ]</span>
+            )}
+            {submitStatus === 'SUCCESSFULLY SENT' && (
+              <span className="text-[10px] md:text-xs text-lime uppercase font-bold text-center mt-2 font-mono">[ TRANSMISSION SUCCESSFULLY SENT ]</span>
             )}
           </form>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-dark-green-tint-1 py-16 px-8">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <h1 className="text-4xl md:text-7xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-12">
-            ALWAYS BRINGING THE FIGHT.
+      <footer className="bg-black/80 backdrop-blur-md border-t border-dark-green-tint-1 py-8 md:py-12 px-4 md:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 md:gap-8">
+          <h1 className="text-2xl md:text-4xl lg:text-6xl font-extrabold uppercase tracking-tighter text-lime text-center border-b border-dark-green-tint-1 pb-6 md:pb-8 flex justify-center">
+            <TextRoll center>SYSTEMS YOU CAN RELY ON.</TextRoll>
           </h1>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">DIRECTORY</span>
-              <a href="#hero" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ HOME ]</a>
-              <a href="#about" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ ABOUT ]</a>
-              <a href="#services" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ SERVICES ]</a>
-              <a href="#projects" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ PROJECTS ]</a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <div className="flex flex-col gap-2 text-[10px] md:text-xs">
+              <span className="text-[8px] md:text-[9px] tracking-widest text-lime uppercase font-bold font-mono">DIRECTORY</span>
+              <a href="#about" className="text-green-off-white-2 hover:text-white transition-colors">[ ABOUT ]</a>
+              <a href="#services" className="text-green-off-white-2 hover:text-white transition-colors">[ SERVICES ]</a>
+              <a href="#projects" className="text-green-off-white-2 hover:text-white transition-colors">[ PROJECTS ]</a>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">COMMUNITIES</span>
-              <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ GITHUB ]</a>
+            <div className="flex flex-col gap-2 text-[10px] md:text-xs">
+              <span className="text-[8px] md:text-[9px] tracking-widest text-lime uppercase font-bold font-mono">COMMUNITIES</span>
+              <a href="https://github.com/Glizocksama-2" target="_blank" rel="noopener noreferrer" className="text-green-off-white-2 hover:text-white transition-colors">[ GITHUB ]</a>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] tracking-widest text-lime uppercase font-bold">LEGAL</span>
-              <a href="#privacy" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
-              <a href="#terms" className="text-sm text-green-off-white-2 hover:text-white transition-colors">[ TERMS &amp; CONDITIONS ]</a>
+            <div className="flex flex-col gap-2 text-[10px] md:text-xs">
+              <span className="text-[8px] md:text-[9px] tracking-widest text-lime uppercase font-bold font-mono">LEGAL</span>
+              <a href="mailto:brianmukwe097@gmail.com?subject=Privacy%20Policy%20Inquiry" className="text-green-off-white-2 hover:text-white transition-colors">[ PRIVACY POLICY ]</a>
+              <a href="mailto:brianmukwe097@gmail.com?subject=Terms%20%26%20Conditions%20Inquiry" className="text-green-off-white-2 hover:text-white transition-colors">[ TERMS & CONDITIONS ]</a>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-dark-green-tint-1 pt-8 text-[10px] text-green-off-white-2 uppercase">
-            <span>© 2026 Brian Mukwe Waliaula. All rights reserved.</span>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-dark-green-tint-1 pt-4 md:pt-6 text-[8px] md:text-[9px] text-green-off-white-2 uppercase font-mono">
+            <span>2026 Brian Mukwe Waliaula. All rights reserved.</span>
           </div>
         </div>
       </footer>
     </main>
-  );
+  </>
+);
 }

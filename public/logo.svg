@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Luffy's X Scar Logo - Minimal Cyberpunk Style -->
+  <rect width="64" height="64" fill="#000000"/>
+  
+  <!-- First diagonal stroke (bottom-left to top-right) -->
+  <path 
+    d="M14 50 L50 14" 
+    stroke="#A4F73D" 
+    stroke-width="6" 
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#shadow)"
+  />
+  
+  <!-- Second diagonal stroke (top-left to bottom-right) - slightly overlapping -->
+  <path 
+    d="M14 14 L50 50" 
+    stroke="#A4F73D" 
+    stroke-width="6" 
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#shadow)"
+  />
+  
+  <!-- Subtle glow effect -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#A4F73D" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+</svg>
