@@ -1,0 +1,11 @@
+# Robots.txt for brianmukwe.dev
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://brianmukwe.dev/sitemap.xml
+
+# Disallow private/admin paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/

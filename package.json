@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fontsource-variable/mona-sans": "^5.2.8",
+    "@fontsource/playfair-display": "^5.2.8",
     "@gsap/react": "^2.1.2",
     "@number-flow/react": "^0.6.1",
     "@react-three/drei": "^10.7.7",
