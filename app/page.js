@@ -280,11 +280,11 @@ export default function Home() {
     },
     {
       num: '08',
-      title: 'Kenyan Tax Intelligence',
+      title: 'KTI',
       role: 'Systems Developer',
       desc: 'Interactive tax advisory and compliance intelligence dashboard. Integrates real-time KRA calculators, PAYE/VAT trackers, and a virtual compliance chatbot assisting local businesses.',
       tags: ['React', 'KRA Rules', 'AI Assistant', 'Tax Analytics'],
-      github: 'https://github.com/Glizocksama-2/fareast-ventures',
+      github: 'https://github.com/Glizocksama-2/kenyan-tax-intelligence',
       screenshot: '/kenyan_tax_intelligence.png'
     }
   ];
