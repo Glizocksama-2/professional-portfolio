@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Center, PerspectiveCamera } from '@react-three/drei';
+import { Center, PerspectiveCamera } from '@react-three/drei';
 import gsap from 'gsap';
 
 // Procedural 3D F1 Helmet Model
@@ -74,8 +74,6 @@ export default function HelmetCanvas({ scrollProgress = 0, styleName = "Porcelai
         <Center>
           <HelmetModel rotationX={rotationX} rotationY={rotationY} />
         </Center>
-        
-        <OrbitControls enableZoom={false} enablePan={false} />
       </Canvas>
       <div className="absolute bottom-4 left-4 text-white text-[10px] tracking-widest uppercase opacity-40">
         [ {styleName} MODEL RUNTIME ]

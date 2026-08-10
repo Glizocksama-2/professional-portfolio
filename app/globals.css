@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,400..900;1,400..900&family=Playfair+Display:ital,wght@1,400..700&display=swap');
-
 @import "tailwindcss";
 
 
@@ -77,11 +75,11 @@
   --color-grey-2: var(--color--grey-2);
   --color-grey-on-track: var(--color--grey-on-track);
   --color-lime: var(--color--lime);
-  --color-lime-off: var(--color-lime-off);
+  --color-lime-off: var(--color--lime-off);
   --color-orange: var(--color--orange);
   
-  --font-sans: 'Mona Sans', system-ui, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
@@ -93,9 +91,18 @@ body {
   padding: 0;
 }
 
-.font-brier {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-style: italic;
+/* Headline type scale — 700-900 weight, -0.025em tracking, 1.1 leading */
+h1, h2, h3, h4 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+/* Body copy — 400 weight, 1.65 leading, max 65ch */
+p {
+  font-weight: 400;
+  line-height: 1.65;
+  max-width: 65ch;
 }
 
 /* Custom Scroll Cadence */
