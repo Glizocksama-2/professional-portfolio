@@ -6,7 +6,7 @@ export default function Services() {
       <div className="max-w-6xl mx-auto flex flex-col gap-12">
         <div className="flex flex-col gap-2">
           <span className="text-[10px] tracking-widest text-lime uppercase font-bold">[ SERVICES & CORE COMPETENCIES ]</span>
-          <h2 className="text-4xl font-extrabold uppercase">13 Service Areas</h2>
+          <h2 className="text-4xl font-extrabold uppercase">17 Service Areas</h2>
         </div>
 
         {/* Asymmetric Bento — 12-col grid, no 3-equal-rows */}

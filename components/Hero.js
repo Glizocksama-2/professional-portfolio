@@ -49,11 +49,11 @@ export default function Hero() {
       {/* Stats Widget */}
       <div className="z-10 grid grid-cols-3 gap-6 bg-black/60 backdrop-blur-md border border-dark-green-tint-1 p-6 md:max-w-md w-full mt-8 mb-8">
         <div className="flex flex-col">
-          <span className="text-2xl font-black text-lime">10+</span>
+          <span className="text-2xl font-black text-lime">17+</span>
           <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SHIPPED</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-2xl font-black text-lime">13</span>
+          <span className="text-2xl font-black text-lime">17</span>
           <span className="text-[9px] tracking-widest text-green-off-white-2 uppercase mt-1">SERVICES</span>
         </div>
         <div className="flex flex-col">
